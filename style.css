@@ -1,0 +1,49 @@
+:root {
+  --bg: #97999c;
+  --fg: #cdcfd3;
+  --dark: #16171a;
+  --light: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #4c4e51;
+    --fg: #8a8c8f;
+    --dark: #000;
+    --light: #cdcfd3;
+  }
+}
+
+body {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
+}
+
+svg {
+  background: var(--fg);
+  width: 1000px;
+  height: 600px;
+}
+.hexagon {
+  stroke: var(--dark);
+  stroke-width: 0.15;
+  stroke-linejoin: round;
+  fill: none;
+}
+.gridline {
+  display: none;
+  stroke: red;
+  stroke-width: 0.05;
+}
+.gridline.axis {
+  stroke-width: 0.1;
+}
+.debug-label {
+  fill: red;
+  font: normal 1px Tahoma;
+}
