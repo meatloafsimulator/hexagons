@@ -26,15 +26,41 @@ body {
 
 svg {
   background: var(--fg);
-  width: 1000px;
+  width:  600px;
   height: 600px;
+/*  transform: rotate(-90deg);*/
 }
-.hexagon {
-  stroke: var(--dark);
+
+.hex {
+/*  stroke: var(--dark);*/
+  stroke: var(--fg);
   stroke-width: 0.15;
+/*  stroke-width: 0.05;*/
   stroke-linejoin: round;
   fill: none;
 }
+.hex.brick {
+  fill: #c30;
+}
+.hex.wood {
+  fill: green;
+}
+.hex.grain {
+  fill: yellow;
+}
+.hex.sheep {
+  fill: lime;
+}
+.hex.rock {
+  fill: #333;
+}
+.hex.desert {
+  fill: #ffc;
+}
+.water {
+  fill: blue;
+}
+
 .gridline {
   display: none;
   stroke: red;
@@ -44,6 +70,6 @@ svg {
   stroke-width: 0.1;
 }
 .debug-label {
-  fill: red;
+  display: none;
   font: normal 1px Tahoma;
 }
