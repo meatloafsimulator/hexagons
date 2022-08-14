@@ -20,5 +20,13 @@ function aelo(x, type, fn) {
   const element = typeof x === 'object' ? x : qs(x);
   element.addEventListener(type, f, {once: true});
 }
+function shuffle(arr, prng = Math.random) {
+  const result = [];
+  const remaining = [...arr];
+  while (remaining.length) result.push(
+    ...remaining.splice(prng() * remaining.length, 1)
+  );
+  return result;
+}
 
-export {qs, qsa, ael, aelo};
+export {qs, qsa, ael, aelo, shuffle};

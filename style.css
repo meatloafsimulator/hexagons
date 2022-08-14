@@ -22,13 +22,30 @@ body {
   justify-content: center;
   overscroll-behavior: none;
   -webkit-overscroll-behavior: none;
+  user-select: none;
+  font: normal 24px Tahoma;
+}
+
+.board {
+  position: absolute;
+  --oT: 300px;
+  --oL: calc(var(--oT) * 1.1547); /* 2/√3 */
+  height: calc(var(--oT) * 2);
+  width: calc(var(--oL) * 2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .board {
+    filter: brightness(75%);
+  }
 }
 
 svg {
-  background: var(--fg);
-  width:  600px;
-  height: 600px;
-/*  transform: rotate(-90deg);*/
+/*  background: var(--fg);*/
+/*  width:  693px;*/
+/*  height: 600px;*/
+  width: 100%;
+  height: 100%;
 }
 
 .hex {
@@ -57,8 +74,45 @@ svg {
 .hex.desert {
   fill: #ffc;
 }
+.dock {
+/*  stroke: var(--dark);*/
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+.harbor {
+  stroke: none;
+  stroke-width: 0.5;
+}
 .water {
   fill: blue;
+}
+.beach {
+  stroke: #ffc;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+/*
+.roll-disc {
+  fill: var(--fg);
+}
+.roll-disc-text {
+  font: normal 0.8px Tahoma;
+}
+*/
+
+.roll-disc {
+  --d: calc(var(--oT) / 6);
+  height: var(--d);
+  width: var(--d);
+  border-radius: 50%;
+  background: var(--fg);
+  line-height: var(--d);
+  text-align: center;
+/*  font-weight: bold;*/
+  position: absolute;
+  top: calc(var(--t) * var(--oT) - var(--d) / 2);
+  left: calc(var(--l) * var(--oL) - var(--d) / 2);
 }
 
 .gridline {
