@@ -18,6 +18,7 @@ body {
   top: 0; left: 0; bottom: 0; right: 0;
   background: var(--bg);
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   overscroll-behavior: none;
@@ -27,7 +28,8 @@ body {
 }
 
 .board {
-  position: absolute;
+/*  visibility: hidden;*/
+  position: relative;
   --oT: 300px;
   --oL: calc(var(--oT) * 1.1547); /* 2/√3 */
   height: calc(var(--oT) * 2);
@@ -44,32 +46,32 @@ svg {
 /*  background: var(--fg);*/
 /*  width:  693px;*/
 /*  height: 600px;*/
-  width: 100%;
-  height: 100%;
+  width: inherit;
+  height: inherit;
 }
 
 .hex {
 /*  stroke: var(--dark);*/
   stroke: var(--fg);
-  stroke-width: 0.15;
+  stroke-width: 0.12;
 /*  stroke-width: 0.05;*/
   stroke-linejoin: round;
   fill: none;
 }
-.hex.brick {
+.hex.hills {
   fill: #c30;
 }
-.hex.wood {
-  fill: green;
-}
-.hex.grain {
-  fill: yellow;
-}
-.hex.sheep {
+.hex.pasture {
   fill: lime;
 }
-.hex.rock {
+.hex.mountains {
   fill: #333;
+}
+.hex.fields {
+  fill: yellow;
+}
+.hex.forest {
+  fill: green;
 }
 .hex.desert {
   fill: #ffc;
@@ -81,14 +83,19 @@ svg {
 }
 .harbor {
   stroke: none;
+  stroke-width: 0.4;
+}
+.port {
+  stroke: #663;
   stroke-width: 0.5;
+  stroke-linecap: round;
 }
 .water {
   fill: blue;
 }
 .beach {
-  stroke: #ffc;
-  stroke-width: 1;
+/*  stroke: #ffc;*/
+  stroke-width: 0.5;
   stroke-linejoin: round;
 }
 
@@ -101,8 +108,13 @@ svg {
 }
 */
 
+.chit-container {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%; width: 100%;
+}
 .roll-disc {
-  --d: calc(var(--oT) / 6);
+  --d: 50px;
   height: var(--d);
   width: var(--d);
   border-radius: 50%;
@@ -111,8 +123,29 @@ svg {
   text-align: center;
 /*  font-weight: bold;*/
   position: absolute;
-  top: calc(var(--t) * var(--oT) - var(--d) / 2);
-  left: calc(var(--l) * var(--oL) - var(--d) / 2);
+  top: calc(var(--t) - var(--d) / 2);
+  left: calc(var(--l) - var(--d) / 2);
+}
+
+.harbor-label {
+  --d: 50px;
+  height: var(--d);
+  width: var(--d);
+  border-radius: 50%;
+  background: var(--fg);
+  position: absolute;
+  top: calc(var(--t) - var(--d) / 2);
+  left: calc(var(--l) - var(--d) / 2);
+}
+
+.corner-cut {
+  fill: var(--bg);
+}
+
+.harbor-area {
+  stroke: var(--fg);
+  stroke-width: 0.12;
+  fill: none;
 }
 
 .gridline {
@@ -126,4 +159,10 @@ svg {
 .debug-label {
   display: none;
   font: normal 1px Tahoma;
+}
+
+.player-area {
+/*  background: white;*/
+  height: 300px;
+  width: 150px;
 }

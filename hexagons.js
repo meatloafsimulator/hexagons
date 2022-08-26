@@ -2,6 +2,8 @@ import {
   qs, qsa, ael, aelo, shuffle,
 } from './utility.js';
 
+
+
 const w = Math.sqrt(3);
 
 const sites = [];
@@ -46,14 +48,22 @@ const hexSites = centers.map(c => {
   ));
 });
 
-const hexTypes = shuffle([
-  'brick', 'brick', 'brick',
-  'wood', 'wood', 'wood', 'wood',
-  'grain', 'grain', 'grain', 'grain',
-  'sheep', 'sheep', 'sheep', 'sheep',
-  'rock', 'rock', 'rock',
-  'desert',
-]);
+
+const hexCount = {
+  hills: 3,
+  pasture: 4,
+  mountains: 3,
+  fields: 4,
+  forest: 4,
+  desert: 1,
+};
+let hexTypes = [];
+for (const t in hexCount) {
+  for (let i = 0; i < hexCount[t]; i++) {
+    hexTypes.push(t);
+  }
+}
+hexTypes = shuffle(hexTypes);
 const hexRollDiscs = shuffle([
   2, 3, 3, 4, 4, 5, 5, 6, 6,
   8, 8, 9, 9, 10, 10, 11, 11, 12,
@@ -128,6 +138,15 @@ const svg = qs('svg');
 const ns = svg.namespaceURI;
 
 {
+  const fvx = frameVertices.map(v => v[0]);
+  const fvy = frameVertices.map(v => v[1]);
+  const xMax = Math.max(...fvx) * w;
+  const yMax = Math.max(...fvy);
+  const vb = [-xMax, -yMax, 2 * xMax, 2 * yMax];
+  svg.setAttribute('viewBox', vb.join(' '));
+}
+
+{
   const pg = document.createElementNS(ns, 'polygon');
   pg.classList.add('water');
   const pointsArr = [];
@@ -144,10 +163,10 @@ const ns = svg.namespaceURI;
   const pointsArr = [];
   for (const s of coast) {
     pointsArr.push(sites[s][0] * w, sites[s][1]);
-    const portTimes2 = ports.flat().indexOf(s);
-    if (portTimes2 % 2) continue;
-    const p = portMirrorPoints[portTimes2 / 2];
-    pointsArr.push(p[0] * w, p[1]);
+    // const portTimes2 = ports.flat().indexOf(s);
+    // if (portTimes2 % 2) continue;
+    // const p = portMirrorPoints[portTimes2 / 2];
+    // pointsArr.push(p[0] * w, p[1]);
   }
   pg.setAttribute('points', pointsArr.join(' '));
   svg.append(pg);
@@ -167,6 +186,16 @@ for (const [i, port] of ports.entries()) {
     l.setAttribute('y2', sy);
     svg.append(l);
   }
+}
+
+for (const [p0, p1] of ports) {
+  const l = document.createElementNS(ns, 'line');
+  l.classList.add('port');
+  l.setAttribute('x1', sites[p0][0] * w);
+  l.setAttribute('y1', sites[p0][1]);
+  l.setAttribute('x2', sites[p1][0] * w);
+  l.setAttribute('y2', sites[p1][1]);
+  svg.append(l);
 }
 
 // for (const [i, [s0, s1]] of ports.entries()) {
@@ -251,14 +280,56 @@ for (const [i, [x, y]] of centers.entries()) {
   // svg.append(t);
 }
 
-for (const [i, [x, y]] of centers.entries()) {
+function convertCoordinates(svgCoords) {
+  const hh = 300;
+  const [x, y] = svgCoords;
+  return [
+    `${(x / 6 + 1) * hh * 2 / Math.sqrt(3)}px`,
+    `${(y / 9 + 1) * hh}px`,
+  ];
+}
+
+for (const [i, c] of centers.entries()) {
   if (! hexRollDiscs[i]) continue;
   const d = document.createElement('div');
   d.classList.add('roll-disc');
-  const l = x / 6 + 1;
-  const t = y / 9 + 1;
+  const [l, t] = convertCoordinates(c);
   d.setAttribute('style', `--l: ${l}; --t: ${t};`);
   d.innerHTML = hexRollDiscs[i];
-  qs('.board').append(d);
+  qs('.chit-container').append(d);
 }
 
+
+{
+  // const d = document.createElement('div');
+  // d.classList.add('harbor-label');
+  // const [l, t] = convertCoordinates([5 + 1 / 2, 0]);
+  // d.setAttribute('style', `--l: ${l}; --t: ${t};`);
+  // qs('.board').append(d);
+}
+
+{
+  // const pg = document.createElementNS(ns, 'polygon');
+  // pg.classList.add('corner-cut');
+  // const pointsArr = [
+  //   6 * w, 0,
+  //   6 * w - Math.SQRT1_2, w * Math.SQRT1_2,
+  //   6 * w - Math.SQRT1_2, w * Math.SQRT1_2 * -1,
+  // ];
+  // pg.setAttribute('points', pointsArr.join(' '));
+  // svg.append(pg);
+}
+
+for (const [p0, p1] of ports) {
+  if (coast.indexOf(p0) > 4) continue;
+  const pg = document.createElementNS(ns, 'polygon');
+  pg.classList.add('harbor-area');
+  const pointsArr = [
+    sites[p0][0] * w, sites[p0][1],
+    sites[p1][0] * w, sites[p1][1],
+    sites[p1][0] * w, -9,
+    sites[p0][0] * w, -9,
+  ];
+  pg.setAttribute('points', pointsArr.join(' '));
+  svg.append(pg);
+}
