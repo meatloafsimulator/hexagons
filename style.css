@@ -101,36 +101,6 @@ svg {
 .hex.desert {
   fill: var(--color-sand);
 }
-.dock {
-/*  stroke: var(--dark);*/
-  stroke-width: 1;
-  stroke-linecap: round;
-}
-.harbor {
-  stroke: none;
-  stroke-width: 0.4;
-  stroke-width: 0;
-}
-.port {
-  stroke: #663;
-/*  stroke-width: 0.5;*/
-  stroke-width: 0;
-  stroke-linecap: round;
-}
-.beach {
-/*  stroke: #ffc;*/
-  stroke-width: 0.5;
-  stroke-linejoin: round;
-}
-
-/*
-.roll-disc {
-  fill: var(--fg);
-}
-.roll-disc-text {
-  font: normal 0.8px Tahoma;
-}
-*/
 
 .chit-container {
   position: absolute;
@@ -150,25 +120,6 @@ svg {
   position: absolute;
   top: calc(var(--t) - var(--d) / 2);
   left: calc(var(--l) - var(--d) / 2);
-}
-
-.harbor-label {
-  --d: 50px;
-  height: var(--d);
-  width: var(--d);
-  border-radius: 50%;
-  background: var(--fg);
-  position: absolute;
-  top: calc(var(--t) - var(--d) / 2);
-  left: calc(var(--l) - var(--d) / 2);
-}
-
-.harbor-marker {
-  fill: var(--fg);
-}
-
-.corner-cut {
-  fill: var(--bg);
 }
 
 .harbor-area {
@@ -196,14 +147,6 @@ svg {
   fill: var(--color-ore);
 }
 
-.gridline {
-  display: none;
-  stroke: red;
-  stroke-width: 0.05;
-}
-.gridline.axis {
-  stroke-width: 0.1;
-}
 .debug-label {
   display: none;
   font: normal 1px Tahoma;

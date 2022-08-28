@@ -120,28 +120,6 @@ for (let i = 0; i < 6; i++) {
 const portTypes = shuffle([...resources, 0, 0, 0, 0]);
 
 
-const portEntryPoints = ports.map(p => {
-  const [s0, s1] = p;
-  const [x0, y0] = sites[s0];
-  const [x1, y1] = sites[s1];
-  return y0 - y1 === 2 ? [x0 + 1, y0 - 1] :
-      x1 > x0 && y1 > y0 ? [x0, y1 + 1] :
-      x1 > x0 && y0 > y1 ? [x1, y0 + 1] :
-      x0 > x1 && y0 > y1 ? [x0, y1 - 1] :
-      x0 > x1 && y1 > y0 ? [x1, y0 - 1] :
-      [x0 - 1, y0 + 1];
-});
-const portMirrorPoints = ports.map((p, i) => {
-  const pep = portEntryPoints[i];
-  const pmp = [
-    (sites[p[0]][0] + sites[p[1]][0]) / 2,
-    (sites[p[0]][1] + sites[p[1]][1]) / 2,
-  ];
-  return [
-    6 * pmp[0] - 5 * pep[0], 6 * pmp[1] - 5 * pep[1]
-  ];
-});
-
 
 const svg = qs('svg');
 const ns = svg.namespaceURI;
@@ -166,90 +144,6 @@ const ns = svg.namespaceURI;
   svg.append(pg);
 }
 
-{
-  const pg = document.createElementNS(ns, 'polygon');
-  pg.classList.add('beach');
-  const pointsArr = [];
-  for (const s of coast) {
-    pointsArr.push(sites[s][0] * w, sites[s][1]);
-    // const portTimes2 = ports.flat().indexOf(s);
-    // if (portTimes2 % 2) continue;
-    // const p = portMirrorPoints[portTimes2 / 2];
-    // pointsArr.push(p[0] * w, p[1]);
-  }
-  pg.setAttribute('points', pointsArr.join(' '));
-  svg.append(pg);
-}
-
-for (const [i, port] of ports.entries()) {
-  const [px, py] = portEntryPoints[i];
-  for (const s of port) {
-    const [sx, sy] = sites[s];
-    const l = document.createElementNS(ns, 'line');
-    l.classList.add('dock');
-    l.setAttribute('x1', sx * w);
-    l.setAttribute('y1', sy);
-    // l.setAttribute('x2', (sx + px) / 2 * w);
-    // l.setAttribute('y2', (sy + py) / 2);
-    l.setAttribute('x2', sx * w);
-    l.setAttribute('y2', sy);
-    svg.append(l);
-  }
-}
-
-for (const [p0, p1] of ports) {
-  const l = document.createElementNS(ns, 'line');
-  l.classList.add('port');
-  l.setAttribute('x1', sites[p0][0] * w);
-  l.setAttribute('y1', sites[p0][1]);
-  l.setAttribute('x2', sites[p1][0] * w);
-  l.setAttribute('y2', sites[p1][1]);
-  svg.append(l);
-}
-
-// for (const [p0, p1] of ports) {
-//   const coastIndex = coast.indexOf(p1);
-//   const side = Math.floor(coastIndex / 5);
-//   const pos = coastIndex % 5;
-//   if (side) continue;
-//   const pg = document.createElementNS(ns, 'polygon');
-//   pg.classList.add('harbor-area');
-//   const pointsArr = [
-//     sites[p0][0] * w, sites[p0][1],
-//     sites[p1][0] * w, sites[p1][1],
-//     // sites[p1][0] * w, -9,
-//     // sites[p0][0] * w, -9,
-//   ];
-//   pointsArr.push(sites[pos % 2 ? p0 : p1][0] * w, -9);
-//   pg.setAttribute('points', pointsArr.join(' '));
-//   svg.append(pg);
-//   // const c = document.createElementNS(ns, 'circle');
-//   // c.classList.add('harbor-marker');
-//   // const rFull = w - 1;
-//   // const coastKeyPoint = sites[pos % 2 ? p0 : p1];
-//   // let cx = coastKeyPoint[0] * w;
-//   // if (pos % 2) cx -= rFull; else cx += rFull;
-//   // const cy = -9 + rFull;
-//   // c.setAttribute('cx', cx);
-//   // c.setAttribute('cy', cy);
-//   // // c.setAttribute('r', rFull * 2 / 3);
-//   // c.setAttribute('r', 0.5);
-//   // svg.append(c);
-// }
-
-// for (const [i, [s0, s1]] of ports.entries()) {
-//   const pg = document.createElementNS(ns, 'polygon');
-//   pg.classList.add('water');
-//   pg.classList.add('harbor');
-//   const pep = portEntryPoints[i];
-//   const pointsArr = [
-//     pep[0] * w, pep[1],
-//     sites[s0][0] * w, sites[s0][1],
-//     sites[s1][0] * w, sites[s1][1],
-//   ];
-//   pg.setAttribute('points', pointsArr.join(' '));
-//   svg.append(pg);
-// }
 
 for (const [i, siteArr] of hexSites.entries()) {
   const pg = document.createElementNS(ns, 'polygon');
@@ -262,27 +156,6 @@ for (const [i, siteArr] of hexSites.entries()) {
   pg.setAttribute('points', pointsArr.join(' '));
   svg.append(pg);
 }
-
-// for (let x = -9; x <= 9; x++) {
-//   const l = document.createElementNS(ns, 'line');
-//   l.classList.add('gridline');
-//   if (x === 0) l.classList.add('axis');
-//   l.setAttribute('x1', x);
-//   l.setAttribute('x2', x);
-//   l.setAttribute('y1', -10);
-//   l.setAttribute('y2', 10);
-//   svg.append(l);
-// }
-// for (let y = -5; y <= 5; y++) {
-//   const l = document.createElementNS(ns, 'line');
-//   l.classList.add('gridline');
-//   if (y === 0) l.classList.add('axis');
-//   l.setAttribute('x1', -10);
-//   l.setAttribute('x2', 10);
-//   l.setAttribute('y1', y * h);
-//   l.setAttribute('y2', y * h);
-//   svg.append(l);
-// }
 
 for (const [i, [x, y]] of sites.entries()) {
   const t = document.createElementNS(ns, 'text');
@@ -299,24 +172,6 @@ for (const [i, [x, y]] of centers.entries()) {
   t.setAttribute('y', y);
   t.innerHTML = i;
   svg.append(t);
-}
-
-for (const [i, [x, y]] of centers.entries()) {
-  // if (! hexRollDiscs[i]) continue;
-  // const pg = document.createElementNS(ns, 'circle');
-  // pg.classList.add('roll-disc');
-  // pg.setAttribute('cx', x * w);
-  // pg.setAttribute('cy', y);
-  // pg.setAttribute('r', 0.6);
-  // svg.append(pg);
-  // const t = document.createElementNS(ns, 'text');
-  // t.classList.add('roll-disc-text');
-  // t.setAttribute('x', x * w);
-  // t.setAttribute('y', y);
-  // t.setAttribute('text-anchor', 'middle');
-  // t.setAttribute('dominant-baseline', 'middle');
-  // t.innerHTML = hexRollDiscs[i];
-  // svg.append(t);
 }
 
 function convertCoordinates(svgCoords) {
@@ -338,26 +193,6 @@ for (const [i, c] of centers.entries()) {
   qs('.chit-container').append(d);
 }
 
-
-{
-  // const d = document.createElement('div');
-  // d.classList.add('harbor-label');
-  // const [l, t] = convertCoordinates([5 + 1 / 2, 0]);
-  // d.setAttribute('style', `--l: ${l}; --t: ${t};`);
-  // qs('.board').append(d);
-}
-
-{
-  // const pg = document.createElementNS(ns, 'polygon');
-  // pg.classList.add('corner-cut');
-  // const pointsArr = [
-  //   6 * w, 0,
-  //   6 * w - Math.SQRT1_2, w * Math.SQRT1_2,
-  //   6 * w - Math.SQRT1_2, w * Math.SQRT1_2 * -1,
-  // ];
-  // pg.setAttribute('points', pointsArr.join(' '));
-  // svg.append(pg);
-}
 
 for (const [i, [p0, p1]] of ports.entries()) {
   const coastIndex = coast.indexOf(p1);
@@ -385,16 +220,4 @@ for (const [i, [p0, p1]] of ports.entries()) {
   pg.classList.add(portTypes[i] || 'generic');
   pg.setAttribute('points', points.flat().join(' '));
   svg.append(pg);
-  // const c = document.createElementNS(ns, 'circle');
-  // c.classList.add('harbor-marker');
-  // const rFull = w - 1;
-  // const coastKeyPoint = sites[pos % 2 ? p0 : p1];
-  // let cx = coastKeyPoint[0] * w;
-  // if (pos % 2) cx -= rFull; else cx += rFull;
-  // const cy = -9 + rFull;
-  // c.setAttribute('cx', cx);
-  // c.setAttribute('cy', cy);
-  // // c.setAttribute('r', rFull * 2 / 3);
-  // c.setAttribute('r', 0.5);
-  // svg.append(c);
 }
