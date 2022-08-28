@@ -4,7 +4,7 @@ import {
 
 
 const resources = [
-  'brick', 'lumber', 'wool', 'grain', 'ore',
+  'brick', 'wood', 'sheep', 'wheat', 'rock',
 ];
 
 const w = Math.sqrt(3);
@@ -53,12 +53,7 @@ const hexSites = centers.map(c => {
 
 
 const hexCount = {
-  hills: 3,
-  pasture: 4,
-  mountains: 3,
-  fields: 4,
-  forest: 4,
-  desert: 1,
+  brick: 3, wood: 4, sheep: 4, wheat: 4, rock: 3,
 };
 let hexTypes = [];
 for (const t in hexCount) {
@@ -66,6 +61,7 @@ for (const t in hexCount) {
     hexTypes.push(t);
   }
 }
+while (hexTypes.length < 19) hexTypes.push('desert');
 hexTypes = shuffle(hexTypes);
 const hexRollDiscs = shuffle([
   2, 3, 3, 4, 4, 5, 5, 6, 6,

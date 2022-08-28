@@ -11,12 +11,6 @@
 /*  --color-grain: #f2a900;*/
 /*  --color-lumber: rgb(23,91,48);*/
 
-  --color-brick: #930;
-  --color-wool: #6c0;
-  --color-ore: #333;
-  --color-grain: #f90;
-  --color-lumber: #063;
-
   --color-water: #06c;
 /* 00c 039 03c 069 06c 06f 09c 09f 369 36c 36f */
 /* 03c 06c 06f 09c 09f 36c 36f */
@@ -67,9 +61,14 @@ svg {
 /*  width:  693px;*/
 /*  height: 600px;*/
   width: inherit;
-/*  height: inherit;*/
-  height: 600px;
+  height: inherit;
 }
+
+.brick {--color-resource: #930;}
+.wood  {--color-resource: #063;}
+.sheep {--color-resource: #6c0;}
+.wheat {--color-resource: #f90;}
+.rock  {--color-resource: #333;}
 
 .water {
   fill: var(--color-water);
@@ -81,25 +80,7 @@ svg {
   stroke-width: var(--path);
 /*  stroke-width: 0.05;*/
   stroke-linejoin: round;
-  fill: none;
-}
-.hex.hills {
-  fill: var(--color-brick);
-}
-.hex.pasture {
-  fill: var(--color-wool);
-}
-.hex.mountains {
-  fill: var(--color-ore);
-}
-.hex.fields {
-  fill: var(--color-grain);
-}
-.hex.forest {
-  fill: var(--color-lumber);
-}
-.hex.desert {
-  fill: var(--color-sand);
+  fill: var(--color-resource, var(--color-sand));
 }
 
 .chit-container {
@@ -123,28 +104,9 @@ svg {
 }
 
 .harbor-area {
-/*  stroke: #06c;*/
-/*  stroke-width: var(--path);*/
-/*  fill: #fff5;*/
-/*  fill: #59d;*/
   stroke: var(--color-sand);
   stroke-width: 0.08;
-  fill: #69f;
-}
-.harbor-area.brick {
-  fill: var(--color-brick);
-}
-.harbor-area.lumber {
-  fill: var(--color-lumber);
-}
-.harbor-area.wool {
-  fill: var(--color-wool);
-}
-.harbor-area.grain {
-  fill: var(--color-grain);
-}
-.harbor-area.ore {
-  fill: var(--color-ore);
+  fill: var(--color-resource, #69f);
 }
 
 .debug-label {
@@ -187,27 +149,7 @@ svg {
   justify-content: center;
   align-items: center;
   padding: 0;
-  background: white;
-}
-
-.card.brick {
-  background: var(--color-brick);
-}
-
-.card.ore {
-  background: var(--color-ore);
-}
-
-.card.wool {
-  background: var(--color-wool);
-}
-
-.card.grain {
-  background: var(--color-grain);
-}
-
-.card.lumber {
-  background: var(--color-lumber);
+  background: var(--color-resource);
 }
 
 .card.resource .circle {
