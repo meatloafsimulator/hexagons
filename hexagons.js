@@ -319,9 +319,11 @@ for (const [i, c] of centers.entries()) {
   // pg.setAttribute('points', pointsArr.join(' '));
   // svg.append(pg);
 }
-
 for (const [p0, p1] of ports) {
-  if (coast.indexOf(p0) > 4) continue;
+  const coastIndex = coast.indexOf(p1);
+  const side = Math.floor(coastIndex / 5);
+  const pos = coastIndex % 5;
+  if (side) continue;
   const pg = document.createElementNS(ns, 'polygon');
   pg.classList.add('harbor-area');
   const pointsArr = [
@@ -332,6 +334,18 @@ for (const [p0, p1] of ports) {
   ];
   pg.setAttribute('points', pointsArr.join(' '));
   svg.append(pg);
+  const c = document.createElementNS(ns, 'circle');
+  c.classList.add('harbor-marker');
+  const rFull = w - 1;
+  const coastKeyPoint = sites[pos % 2 ? p0 : p1];
+  let cx = coastKeyPoint[0] * w;
+  if (pos % 2) cx -= rFull; else cx += rFull;
+  const cy = -9 + rFull;
+  c.setAttribute('cx', cx);
+  c.setAttribute('cy', cy);
+  // c.setAttribute('r', rFull * 2 / 3);
+  c.setAttribute('r', 0.5);
+  svg.append(c);
 }
 
 // x/√3 + y - 2 = 0; (a, a);
@@ -343,3 +357,4 @@ for (const [p0, p1] of ports) {
 // a = 2/(√3 - 1)  OR  a = 2/(3 + √3)
 // RESULT: Circle inscribed in harbor quarter-hex
 // has its center 2/(3+√3) from the quartering lines.
+// This is equivalent to 1 - 1/√3.

@@ -162,14 +162,18 @@ svg {
   left: calc(var(--l) - var(--d) / 2);
 }
 
+.harbor-marker {
+  fill: var(--fg);
+}
+
 .corner-cut {
   fill: var(--bg);
 }
 
 .harbor-area {
 /*  stroke: var(--fg);*/
-  stroke-width: 0.12;
-  fill: none;
+/*  stroke-width: 0.12;*/
+  fill: #fff5;
 }
 
 .gridline {
