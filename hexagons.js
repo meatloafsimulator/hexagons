@@ -3,6 +3,9 @@ import {
 } from './utility.js';
 
 
+const resources = [
+  'brick', 'lumber', 'wool', 'grain', 'ore',
+];
 
 const w = Math.sqrt(3);
 
@@ -74,6 +77,9 @@ hexRollDiscs.splice(hexTypes.indexOf('desert'), 0, 0);
 const frameVertices = [
   [6, 0], [3, 9], [-3, 9], [-6, 0], [-3, -9], [3, -9],
 ];
+frameVertices.sort(
+  (a, b) => Math.atan2(...a) - Math.atan2(...b)
+);
 
 
 const neighbors = [];
@@ -111,6 +117,9 @@ for (let i = 0; i < 6; i++) {
   if (hasOnePort[i]) ports.push(side.slice(1, 3));
   else ports.push(side.slice(0, 2), side.slice(3));
 }
+const portTypes = shuffle([...resources, 0, 0, 0, 0]);
+
+
 const portEntryPoints = ports.map(p => {
   const [s0, s1] = p;
   const [x0, y0] = sites[s0];
@@ -197,6 +206,36 @@ for (const [p0, p1] of ports) {
   l.setAttribute('y2', sites[p1][1]);
   svg.append(l);
 }
+
+// for (const [p0, p1] of ports) {
+//   const coastIndex = coast.indexOf(p1);
+//   const side = Math.floor(coastIndex / 5);
+//   const pos = coastIndex % 5;
+//   if (side) continue;
+//   const pg = document.createElementNS(ns, 'polygon');
+//   pg.classList.add('harbor-area');
+//   const pointsArr = [
+//     sites[p0][0] * w, sites[p0][1],
+//     sites[p1][0] * w, sites[p1][1],
+//     // sites[p1][0] * w, -9,
+//     // sites[p0][0] * w, -9,
+//   ];
+//   pointsArr.push(sites[pos % 2 ? p0 : p1][0] * w, -9);
+//   pg.setAttribute('points', pointsArr.join(' '));
+//   svg.append(pg);
+//   // const c = document.createElementNS(ns, 'circle');
+//   // c.classList.add('harbor-marker');
+//   // const rFull = w - 1;
+//   // const coastKeyPoint = sites[pos % 2 ? p0 : p1];
+//   // let cx = coastKeyPoint[0] * w;
+//   // if (pos % 2) cx -= rFull; else cx += rFull;
+//   // const cy = -9 + rFull;
+//   // c.setAttribute('cx', cx);
+//   // c.setAttribute('cy', cy);
+//   // // c.setAttribute('r', rFull * 2 / 3);
+//   // c.setAttribute('r', 0.5);
+//   // svg.append(c);
+// }
 
 // for (const [i, [s0, s1]] of ports.entries()) {
 //   const pg = document.createElementNS(ns, 'polygon');
@@ -319,42 +358,43 @@ for (const [i, c] of centers.entries()) {
   // pg.setAttribute('points', pointsArr.join(' '));
   // svg.append(pg);
 }
-for (const [p0, p1] of ports) {
+
+for (const [i, [p0, p1]] of ports.entries()) {
   const coastIndex = coast.indexOf(p1);
   const side = Math.floor(coastIndex / 5);
   const pos = coastIndex % 5;
-  if (side) continue;
+  const [s0, s1] = [sites[p0], sites[p1]];
+  const fv0 = frameVertices[(side + 5) % 6];
+  const fv1 = frameVertices[side];
+  const p = (Math.floor(pos / 2) + 1) / 3;
+  const edgePoint = [
+    fv0[0] * (1 - p) + fv1[0] * p,
+    fv0[1] * (1 - p) + fv1[1] * p,
+  ];
+  const center = [
+    (s0[0] + s1[0] + 2 * edgePoint[0]) / 4,
+    (s0[1] + s1[1] + 2 * edgePoint[1]) / 4,
+  ];
+  const a = 1;
+  const points = [s0, s1, edgePoint].map(u => [
+    (u[0] * a + center[0]) / (a + 1) * w,
+    (u[1] * a + center[1]) / (a + 1),
+  ]);
   const pg = document.createElementNS(ns, 'polygon');
   pg.classList.add('harbor-area');
-  const pointsArr = [
-    sites[p0][0] * w, sites[p0][1],
-    sites[p1][0] * w, sites[p1][1],
-    sites[p1][0] * w, -9,
-    sites[p0][0] * w, -9,
-  ];
-  pg.setAttribute('points', pointsArr.join(' '));
+  pg.classList.add(portTypes[i] || 'generic');
+  pg.setAttribute('points', points.flat().join(' '));
   svg.append(pg);
-  const c = document.createElementNS(ns, 'circle');
-  c.classList.add('harbor-marker');
-  const rFull = w - 1;
-  const coastKeyPoint = sites[pos % 2 ? p0 : p1];
-  let cx = coastKeyPoint[0] * w;
-  if (pos % 2) cx -= rFull; else cx += rFull;
-  const cy = -9 + rFull;
-  c.setAttribute('cx', cx);
-  c.setAttribute('cy', cy);
-  // c.setAttribute('r', rFull * 2 / 3);
-  c.setAttribute('r', 0.5);
-  svg.append(c);
+  // const c = document.createElementNS(ns, 'circle');
+  // c.classList.add('harbor-marker');
+  // const rFull = w - 1;
+  // const coastKeyPoint = sites[pos % 2 ? p0 : p1];
+  // let cx = coastKeyPoint[0] * w;
+  // if (pos % 2) cx -= rFull; else cx += rFull;
+  // const cy = -9 + rFull;
+  // c.setAttribute('cx', cx);
+  // c.setAttribute('cy', cy);
+  // // c.setAttribute('r', rFull * 2 / 3);
+  // c.setAttribute('r', 0.5);
+  // svg.append(c);
 }
-
-// x/√3 + y - 2 = 0; (a, a);
-// |a/√3 + a - 2|/√(1/3 + 1)
-// |a(1+√3) - 2| / 2
-// |a(1+√3) - 2| / 2 = a
-// a(1+√3) - 2 = 2a   OR   a(1+√3) - 2 = -2a
-// a(√3 - 1) = 2      OR   a(3 + √3) = 2
-// a = 2/(√3 - 1)  OR  a = 2/(3 + √3)
-// RESULT: Circle inscribed in harbor quarter-hex
-// has its center 2/(3+√3) from the quartering lines.
-// This is equivalent to 1 - 1/√3.

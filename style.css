@@ -53,6 +53,7 @@ body {
   --oL: calc(var(--oT) * 1.1547); /* 2/√3 */
   height: calc(var(--oT) * 2);
   width: calc(var(--oL) * 2);
+  --path: 0.12;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -77,7 +78,7 @@ svg {
 /*  stroke: var(--dark);*/
 /*  stroke: var(--fg);*/
   stroke: var(--color-sand);
-  stroke-width: 0.12;
+  stroke-width: var(--path);
 /*  stroke-width: 0.05;*/
   stroke-linejoin: round;
   fill: none;
@@ -171,9 +172,28 @@ svg {
 }
 
 .harbor-area {
-/*  stroke: var(--fg);*/
-/*  stroke-width: 0.12;*/
-  fill: #fff5;
+/*  stroke: #06c;*/
+/*  stroke-width: var(--path);*/
+/*  fill: #fff5;*/
+/*  fill: #59d;*/
+  stroke: var(--color-sand);
+  stroke-width: 0.08;
+  fill: #69f;
+}
+.harbor-area.brick {
+  fill: var(--color-brick);
+}
+.harbor-area.lumber {
+  fill: var(--color-lumber);
+}
+.harbor-area.wool {
+  fill: var(--color-wool);
+}
+.harbor-area.grain {
+  fill: var(--color-grain);
+}
+.harbor-area.ore {
+  fill: var(--color-ore);
 }
 
 .gridline {
