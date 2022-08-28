@@ -333,3 +333,13 @@ for (const [p0, p1] of ports) {
   pg.setAttribute('points', pointsArr.join(' '));
   svg.append(pg);
 }
+
+// x/√3 + y - 2 = 0; (a, a);
+// |a/√3 + a - 2|/√(1/3 + 1)
+// |a(1+√3) - 2| / 2
+// |a(1+√3) - 2| / 2 = a
+// a(1+√3) - 2 = 2a   OR   a(1+√3) - 2 = -2a
+// a(√3 - 1) = 2      OR   a(3 + √3) = 2
+// a = 2/(√3 - 1)  OR  a = 2/(3 + √3)
+// RESULT: Circle inscribed in harbor quarter-hex
+// has its center 2/(3+√3) from the quartering lines.

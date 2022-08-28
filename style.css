@@ -3,6 +3,25 @@
   --fg: #cdcfd3;
   --dark: #16171a;
   --light: #fff;
+  
+/*  UF-derived colors*/
+/*  --color-brick: rgb(154,36,26);*/
+/*  --color-wool: ???;*/
+/*  --color-ore: rgb(52,55,65);*/
+/*  --color-grain: #f2a900;*/
+/*  --color-lumber: rgb(23,91,48);*/
+
+  --color-brick: #930;
+  --color-wool: #6c0;
+  --color-ore: #333;
+  --color-grain: #f90;
+  --color-lumber: #063;
+
+  --color-water: #06c;
+/* 00c 039 03c 069 06c 06f 09c 09f 369 36c 36f */
+/* 03c 06c 06f 09c 09f 36c 36f */
+/* 06c */
+  --color-sand: #cc9;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -14,8 +33,8 @@
 }
 
 body {
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
+/*  position: absolute;*/
+/*  top: 0; left: 0; bottom: 0; right: 0;*/
   background: var(--bg);
   display: flex;
   flex-direction: row;
@@ -47,34 +66,39 @@ svg {
 /*  width:  693px;*/
 /*  height: 600px;*/
   width: inherit;
-  height: inherit;
+/*  height: inherit;*/
+  height: 600px;
 }
 
+.water {
+  fill: var(--color-water);
+}
 .hex {
 /*  stroke: var(--dark);*/
-  stroke: var(--fg);
+/*  stroke: var(--fg);*/
+  stroke: var(--color-sand);
   stroke-width: 0.12;
 /*  stroke-width: 0.05;*/
   stroke-linejoin: round;
   fill: none;
 }
 .hex.hills {
-  fill: #c30;
+  fill: var(--color-brick);
 }
 .hex.pasture {
-  fill: lime;
+  fill: var(--color-wool);
 }
 .hex.mountains {
-  fill: #333;
+  fill: var(--color-ore);
 }
 .hex.fields {
-  fill: yellow;
+  fill: var(--color-grain);
 }
 .hex.forest {
-  fill: green;
+  fill: var(--color-lumber);
 }
 .hex.desert {
-  fill: #ffc;
+  fill: var(--color-sand);
 }
 .dock {
 /*  stroke: var(--dark);*/
@@ -84,14 +108,13 @@ svg {
 .harbor {
   stroke: none;
   stroke-width: 0.4;
+  stroke-width: 0;
 }
 .port {
   stroke: #663;
-  stroke-width: 0.5;
+/*  stroke-width: 0.5;*/
+  stroke-width: 0;
   stroke-linecap: round;
-}
-.water {
-  fill: blue;
 }
 .beach {
 /*  stroke: #ffc;*/
@@ -118,7 +141,8 @@ svg {
   height: var(--d);
   width: var(--d);
   border-radius: 50%;
-  background: var(--fg);
+/*  background: var(--fg);*/
+  background: var(--color-sand);
   line-height: var(--d);
   text-align: center;
 /*  font-weight: bold;*/
@@ -143,7 +167,7 @@ svg {
 }
 
 .harbor-area {
-  stroke: var(--fg);
+/*  stroke: var(--fg);*/
   stroke-width: 0.12;
   fill: none;
 }
@@ -165,4 +189,68 @@ svg {
 /*  background: white;*/
   height: 300px;
   width: 150px;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.hand.resource {
+  position: fixed;
+/*  width: 100%;*/
+  left: 0;
+  bottom: 0;
+  display: flex;  
+  justify-content: center;
+/*  display: none;*/
+}
+
+.card {
+  box-sizing: border-box;
+  --w: 54px;
+  width: var(--w);
+  height: calc(var(--w) * 1.5);
+  border-radius: calc(var(--w) / 12);
+  border: solid white calc(var(--w) / 18);
+}
+
+.card.resource {
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background: white;
+}
+
+.card.brick {
+  background: var(--color-brick);
+}
+
+.card.ore {
+  background: var(--color-ore);
+}
+
+.card.wool {
+  background: var(--color-wool);
+}
+
+.card.grain {
+  background: var(--color-grain);
+}
+
+.card.lumber {
+  background: var(--color-lumber);
+}
+
+.card.resource .circle {
+  width: calc(var(--w) * 3 / 4);
+  height: calc(var(--w) * 3 / 4);
+  display: flex;
+  justify-content: center;
+  background: var(--fg);
+}
+
+.card.resource img {
+  width: calc(var(--w) / 2);
 }
