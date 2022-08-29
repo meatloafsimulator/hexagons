@@ -104,11 +104,6 @@ svg {
   fill: var(--color-resource, none);
 }
 
-.debug-label {
-  display: none;
-  font: normal 1px Tahoma;
-}
-
 .player-area {
 /*  background: white;*/
   height: 300px;
@@ -161,7 +156,7 @@ svg {
 
 .road {
   position: absolute;
-  --h: 54px;
+  --h: 60px;
   --w: 12px;
   height: var(--h);
   width: var(--w);
@@ -186,4 +181,9 @@ svg {
   stroke: #000;
   stroke-width: 0.1875;
   fill: var(--color-player);
+}
+
+.debug-label {
+  display: none;
+  font: normal 1px Tahoma;
 }

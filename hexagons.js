@@ -220,10 +220,10 @@ for (const [i, [p0, p1]] of ports.entries()) {
 
 
 const roads = {
-  orange: [[33, 27], [20, 14]],
-  blue: [[31, 37], [24, 18]],
-  white: [[3, 8], [15, 9]],
-  red: [[10, 5], [40, 34]],
+  orange: [[33, 27], [27, 21], [20, 14], [14, 13]],
+  blue: [[31, 37], [37, 43], [24, 18], [18, 12]],
+  white: [[3, 8], [8, 14], [15, 9], [9, 8]],
+  red: [[10, 5], [5, 4], [40, 34], [34, 28]],
 };
 for (const player in roads) {
   for (const road of roads[player]) {
