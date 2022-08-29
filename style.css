@@ -172,3 +172,18 @@ svg {
   border: solid 1.5px #000;
   transform: rotate(calc(-60deg * var(--a)));
 }
+
+.settlement {
+  position: absolute;
+  --h: 48px;
+  --w: 48px;
+  height: var(--h);
+  width: var(--w);
+  top:  calc(var(--t) - var(--h) / 2);
+  left: calc(var(--l) - var(--w) / 2);
+}
+.settlement polygon {
+  stroke: #000;
+  stroke-width: 0.1875;
+  fill: var(--color-player);
+}

@@ -220,10 +220,10 @@ for (const [i, [p0, p1]] of ports.entries()) {
 
 
 const roads = {
-  orange: [[32, 33], [13, 14]],
-  blue: [[34, 35], [14, 20]],
-  white: [[34, 40], [6, 7]],
-  red: [[7, 13], [18, 19]],
+  orange: [[33, 27], [20, 14]],
+  blue: [[31, 37], [24, 18]],
+  white: [[3, 8], [15, 9]],
+  red: [[10, 5], [40, 34]],
 };
 for (const player in roads) {
   for (const road of roads[player]) {
@@ -240,5 +240,23 @@ for (const player in roads) {
     const style = `--l: ${l}; --t: ${t}; --a: ${a};`
     d.setAttribute('style', style);
     qs('.on-board').append(d);
+  }
+}
+
+const settlements = {
+  orange: [33, 20],
+  blue: [31, 24],
+  white: [3, 15,],
+  red: [10, 40],
+};
+for (const player in settlements) {
+  for (const s of settlements[player]) {
+    const [l, t] = convertCoordinates(sites[s]);
+    const svg = qs('#settlement').content
+        .firstElementChild.cloneNode(true);
+    svg.classList.add(player);
+    const style = `--l: ${l}; --t: ${t};`;
+    svg.setAttribute('style', style);
+    qs('.on-board').append(svg);
   }
 }
