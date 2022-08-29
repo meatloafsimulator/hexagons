@@ -84,14 +84,18 @@ svg {
   top: 0; left: 0;
   height: 100%; width: 100%;
 }
+.on-board > * {
+  position: absolute;
+  height: var(--h);
+  width: var(--w);
+  top: calc(var(--t) - var(--h) / 2);
+  left: calc(var(--l) - var(--w) / 2);
+}
 
 .chit {
   --d: 50px;
-  position: absolute;
-  top: calc(var(--t) - var(--d) / 2);
-  left: calc(var(--l) - var(--d) / 2);
-  height: var(--d);
-  width: var(--d);
+  --h: var(--d);
+  --w: var(--d);
   line-height: var(--d);
   text-align: center;
   background: var(--color-sand);
@@ -155,29 +159,22 @@ svg {
 /*.red    {--color-player: #6a2a60;}*/
 
 .road {
-  position: absolute;
   --h: 60px;
   --w: 12px;
-  height: var(--h);
-  width: var(--w);
-  top:  calc(var(--t) - var(--h) / 2);
-  left: calc(var(--l) - var(--w) / 2);
   background: var(--color-player);
   box-sizing: border-box;
   border: solid 1.5px #000;
   transform: rotate(calc(-60deg * var(--a)));
 }
-
 .settlement {
-  position: absolute;
   --h: 48px;
   --w: 48px;
-  height: var(--h);
-  width: var(--w);
-  top:  calc(var(--t) - var(--h) / 2);
-  left: calc(var(--l) - var(--w) / 2);
 }
-.settlement polygon {
+.city {
+  --h: 64px;
+  --w: 64px;
+}
+.piece polygon {
   stroke: #000;
   stroke-width: 0.1875;
   fill: var(--color-player);

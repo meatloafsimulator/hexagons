@@ -236,7 +236,7 @@ for (const player in roads) {
       (s0[0] - s1[0]) * (s0[1] - s1[1])
     );
     const d = document.createElement('div');
-    d.classList.add('road', player);
+    d.classList.add('road', 'piece', player);
     const style = `--l: ${l}; --t: ${t}; --a: ${a};`
     d.setAttribute('style', style);
     qs('.on-board').append(d);
@@ -244,15 +244,33 @@ for (const player in roads) {
 }
 
 const settlements = {
-  orange: [33, 20],
-  blue: [31, 24],
-  white: [3, 15,],
-  red: [10, 40],
+  orange: [20],
+  blue: [24],
+  white: [15],
+  red: [40],
 };
 for (const player in settlements) {
   for (const s of settlements[player]) {
     const [l, t] = convertCoordinates(sites[s]);
     const svg = qs('#settlement').content
+        .firstElementChild.cloneNode(true);
+    svg.classList.add(player);
+    const style = `--l: ${l}; --t: ${t};`;
+    svg.setAttribute('style', style);
+    qs('.on-board').append(svg);
+  }
+}
+
+const cities = {
+  orange: [33],
+  blue: [31],
+  white: [3],
+  red: [10],
+};
+for (const player in cities) {
+  for (const c of cities[player]) {
+    const [l, t] = convertCoordinates(sites[c]);
+    const svg = qs('#city').content
         .firstElementChild.cloneNode(true);
     svg.classList.add(player);
     const style = `--l: ${l}; --t: ${t};`;
