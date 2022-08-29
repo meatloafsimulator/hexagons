@@ -63,11 +63,11 @@ for (const t in hexCount) {
 }
 while (hexTypes.length < 19) hexTypes.push('desert');
 hexTypes = shuffle(hexTypes);
-const hexRollDiscs = shuffle([
+const chits = shuffle([
   2, 3, 3, 4, 4, 5, 5, 6, 6,
   8, 8, 9, 9, 10, 10, 11, 11, 12,
 ]);
-hexRollDiscs.splice(hexTypes.indexOf('desert'), 0, 0);
+chits.splice(hexTypes.indexOf('desert'), 0, 0);
 
 
 const frameVertices = [
@@ -180,13 +180,13 @@ function convertCoordinates(svgCoords) {
 }
 
 for (const [i, c] of centers.entries()) {
-  if (! hexRollDiscs[i]) continue;
+  if (! chits[i]) continue;
   const d = document.createElement('div');
-  d.classList.add('roll-disc');
+  d.classList.add('chit', 'circle');
   const [l, t] = convertCoordinates(c);
   d.setAttribute('style', `--l: ${l}; --t: ${t};`);
-  d.innerHTML = hexRollDiscs[i];
-  qs('.chit-container').append(d);
+  d.innerHTML = chits[i];
+  qs('.on-board').append(d);
 }
 
 
@@ -216,4 +216,29 @@ for (const [i, [p0, p1]] of ports.entries()) {
   pg.classList.add(portTypes[i] || 'generic');
   pg.setAttribute('points', points.flat().join(' '));
   svg.append(pg);
+}
+
+
+const roads = {
+  orange: [[32, 33], [13, 14]],
+  blue: [[34, 35], [14, 20]],
+  white: [[34, 40], [6, 7]],
+  red: [[7, 13], [18, 19]],
+};
+for (const player in roads) {
+  for (const road of roads[player]) {
+    const [s0, s1] = road.map(u => sites[u]);
+    const center = [
+      (s0[0] + s1[0]) / 2, (s0[1] + s1[1]) / 2
+    ];
+    const [l, t] = convertCoordinates(center);
+    const a = Math.sign(
+      (s0[0] - s1[0]) * (s0[1] - s1[1])
+    );
+    const d = document.createElement('div');
+    d.classList.add('road', player);
+    const style = `--l: ${l}; --t: ${t}; --a: ${a};`
+    d.setAttribute('style', style);
+    qs('.on-board').append(d);
+  }
 }

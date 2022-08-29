@@ -47,13 +47,10 @@ body {
   --oL: calc(var(--oT) * 1.1547); /* 2/√3 */
   height: calc(var(--oT) * 2);
   width: calc(var(--oL) * 2);
-  --path: 0.12;
 }
 
 @media (prefers-color-scheme: dark) {
-  .board {
-    filter: brightness(75%);
-  }
+  .board, .hand {filter: brightness(75%);}
 }
 
 svg {
@@ -64,49 +61,47 @@ svg {
   height: inherit;
 }
 
+.circle {border-radius: 50%;}
+
 .brick {--color-resource: #930;}
 .wood  {--color-resource: #063;}
 .sheep {--color-resource: #6c0;}
 .wheat {--color-resource: #f90;}
-.rock  {--color-resource: #333;}
+.rock  {--color-resource: #666;}
 
 .water {
   fill: var(--color-water);
 }
 .hex {
-/*  stroke: var(--dark);*/
-/*  stroke: var(--fg);*/
   stroke: var(--color-sand);
-  stroke-width: var(--path);
-/*  stroke-width: 0.05;*/
+  stroke-width: 0.12;
   stroke-linejoin: round;
   fill: var(--color-resource, var(--color-sand));
 }
 
-.chit-container {
+.on-board {
   position: absolute;
   top: 0; left: 0;
   height: 100%; width: 100%;
 }
-.roll-disc {
+
+.chit {
   --d: 50px;
-  height: var(--d);
-  width: var(--d);
-  border-radius: 50%;
-/*  background: var(--fg);*/
-  background: var(--color-sand);
-  line-height: var(--d);
-  text-align: center;
-/*  font-weight: bold;*/
   position: absolute;
   top: calc(var(--t) - var(--d) / 2);
   left: calc(var(--l) - var(--d) / 2);
+  height: var(--d);
+  width: var(--d);
+  line-height: var(--d);
+  text-align: center;
+  background: var(--color-sand);
 }
 
 .harbor-area {
   stroke: var(--color-sand);
   stroke-width: 0.08;
-  fill: var(--color-resource, #69f);
+/*  fill: var(--color-resource, #69f);*/
+  fill: var(--color-resource, none);
 }
 
 .debug-label {
@@ -118,10 +113,6 @@ svg {
 /*  background: white;*/
   height: 300px;
   width: 150px;
-}
-
-.circle {
-  border-radius: 50%;
 }
 
 .hand.resource {
@@ -160,6 +151,24 @@ svg {
   background: var(--fg);
 }
 
-.card.resource img {
-  width: calc(var(--w) / 2);
+.card.resource img {width: calc(var(--w) / 2);}
+
+.orange {--color-player: #fa4616;}
+.blue   {--color-player: #0021a5;}
+.white  {--color-player: #ffffff;}
+.red    {--color-player: #d32737;}
+/*.red    {--color-player: #6a2a60;}*/
+
+.road {
+  position: absolute;
+  --h: 54px;
+  --w: 12px;
+  height: var(--h);
+  width: var(--w);
+  top:  calc(var(--t) - var(--h) / 2);
+  left: calc(var(--l) - var(--w) / 2);
+  background: var(--color-player);
+  box-sizing: border-box;
+  border: solid 1.5px #000;
+  transform: rotate(calc(-60deg * var(--a)));
 }
