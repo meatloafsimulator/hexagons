@@ -117,7 +117,7 @@ const portTypes = shuffle([...resources, 0, 0, 0, 0]);
 
 
 
-const svg = qs('svg');
+const svg = qs('.board svg');
 const ns = svg.namespaceURI;
 
 {
@@ -212,7 +212,7 @@ for (const [i, [p0, p1]] of ports.entries()) {
     (u[1] * a + center[1]) / (a + 1),
   ]);
   const pg = document.createElementNS(ns, 'polygon');
-  pg.classList.add('harbor-area');
+  pg.classList.add('port');
   pg.classList.add(portTypes[i] || 'generic');
   pg.setAttribute('points', points.flat().join(' '));
   svg.append(pg);
@@ -294,6 +294,9 @@ const handsResource = [
   [0, 3, 0, 1, 0],
   [0, 0, 2, 3, 0],
 ];
+const handsDevelopment = [
+  3, 2, 2, 6,
+];
 
 for (const [i, player] of playerColors.entries()) {
   const pa = fromTemplate('#player-area');
@@ -307,6 +310,10 @@ for (const [i, player] of playerColors.entries()) {
       qs('img', card).src = src;
       qs('.hand.resource', pa).append(card);
     }
+  }
+  for (let n = 0; n < handsDevelopment[i]; n++) {
+    const card = fromTemplate('#development');
+    qs('.hand.development', pa).append(card);
   }
   for (let n = 0; n < 4; n++) {
     const inv = qs('.inventory.settlements', pa);
@@ -326,6 +333,7 @@ for (const [i, player] of playerColors.entries()) {
     d.classList.add('road', 'piece', player);
     inv.append(d);
   }
+  if (i) pa.classList.add('opponent');
   const side = i < 2 ? 'left' : 'right';
   pa.classList.add(side, i % 2 ? 'bottom' : 'top');
   qs(`.side-zone.${side}`).append(pa);

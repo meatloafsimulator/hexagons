@@ -52,8 +52,8 @@
 </template>
 <template id="player-area">
   <div class="player-area">
-    <div class="hand resource"></div>
-    <div class="hand development"></div>
+    <div class="inventory hand resource"></div>
+    <div class="inventory hand development"></div>
     <div class="player-name"></div>
     <div class="inventory cities"></div>
     <div class="inventory settlements"></div>
@@ -62,6 +62,15 @@
 </template>
 <template id="resource">
   <div class="card resource">
-    <div class="circle"><img></div>
+    <div class="face front">
+      <div class="circle"><img></div>
+    </div>
+    <div class="face back"></div>
+  </div>
+</template>
+<template id="development">
+  <div class="card development">
+    <div class="face front"></div>
+    <div class="face back"></div>
   </div>
 </template>
