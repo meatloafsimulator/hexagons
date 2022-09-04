@@ -206,7 +206,7 @@ svg.robber line {
   height: calc(var(--w) * 3 / 4);
   display: flex;
   justify-content: center;
-  background: var(--fg);
+  background: #ffc;
 }
 .card.resource .front img {
   width: calc(var(--w) / 2);
