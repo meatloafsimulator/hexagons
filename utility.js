@@ -28,5 +28,8 @@ function shuffle(arr, prng = Math.random) {
   );
   return result;
 }
+function sum(arr) {
+  return arr.reduce((a, e) => a + e);
+}
 
-export {qs, qsa, ael, aelo, shuffle};
+export {qs, qsa, ael, aelo, shuffle, sum};
