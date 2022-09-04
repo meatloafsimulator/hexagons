@@ -90,6 +90,29 @@ svg {width: inherit; height: inherit;}
   text-align: center;
   background: var(--color-sand);
 }
+.robber {
+/*  outline: solid 3px #000;*/
+/*  opacity: 0.5;*/
+/*  background: #000;*/
+/*  color: var(--color-sand);*/
+/*  box-shadow: inset var(--d) var(--d) #0005;*/
+/*  background: #999;*/
+/*  box-shadow: inset 0 0 0 5px #333;*/
+/*  color: #666;*/
+}
+.chit.robber {
+  outline: solid 4px #000;
+}
+svg.robber {
+  position: absolute;
+  top: 0; left: 0;
+  height: var(--d);
+  width: var(--d);
+}
+svg.robber line {
+  stroke: #000;
+  stroke-width: 0.16;
+}
 
 .port {
   stroke: var(--color-sand);
@@ -102,7 +125,7 @@ svg {width: inherit; height: inherit;}
   width:  300px;
   margin: 0 -150px;
   box-sizing: border-box;
-  padding: 15px 0;
+/*  padding: 15px 0;*/
   display: flex;
   flex-direction: column;
   justify-content: start;
@@ -114,14 +137,51 @@ svg {width: inherit; height: inherit;}
   flex-direction: column-reverse;
   justify-content: end;
 }
+
+.player-name {
+  margin: 5px 2px;
+}
+
 .inventory {
   display: flex;
   flex-shrink: 0;
+  align-items: end;
+}
+.player-area.right .inventory.houses {
+  flex-direction: row-reverse;
 }
 .inventory .piece {
   position: static;
   height: calc(var(--h) / 2);
   width: calc(var(--w) / 2);
+  margin: 0 -2px;
+}
+
+.badges {
+  margin: 3px 0;
+}
+
+.badge {
+  box-sizing: border-box;
+  height: 30px;
+  width: 60px;
+  margin: 2px;
+  border: solid #f2a900 1px;
+  font-size: 18px;
+  color: #f2a900;
+  text-transform: uppercase;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+.badge.awarded {
+  display: flex;
+}
+.largest-army {
+  background: #6a2a60;
+}
+.longest-road {
+  background: #343741;
 }
 
 .card {
@@ -133,7 +193,7 @@ svg {width: inherit; height: inherit;}
   box-sizing: border-box;
   height: 100%; width: 100%;
   border-radius: calc(var(--w) / 12);
-  border: solid white calc(var(--w) / 18);
+  border: solid #fff calc(var(--w) / 24);
 }
 .player-area .card {
   --w: 24px;
@@ -143,10 +203,13 @@ svg {width: inherit; height: inherit;}
 .opponent .hand .card .front {display: none;}
 .opponent .hand .card .back  {display: block;}
 
-.card.resource .front {
+.card .front {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.card.resource .front {
   background: var(--color-resource);
 }
 .card.resource .front .circle {
@@ -162,13 +225,39 @@ svg {width: inherit; height: inherit;}
 .card.resource .back {
   display: none;
   background: #002657;
+/*  background: #036;*/
 }
 
 .card.development .front {
-  background: #fff;
+/*  background: #22884c;*/
+  background: #ffc;
+/*  background: #d8d4d7;*/
+}
+.card.development .front .icon {
+  box-sizing: border-box;
+  height: 100%; width: 100%;
+  border: solid calc(var(--w) / 24) 
+      var(--color-development);
+  border-radius: inherit;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.card.development .front img {
+  width: calc(var(--w) * 3 / 4);
+}
+.card.development.knight {
+  --color-development: #6a2a60;
+}
+.card.development.progress {
+  --color-development: #22884c;
+}
+.card.development.vp {
+  --color-development: #000;
 }
 .card.development .back {
   display: none;
+  background: #d5a736;
   background: #ffc;
 }
 
@@ -197,6 +286,9 @@ svg {width: inherit; height: inherit;}
 .city {
   --h: 64px;
   --w: 64px;
+}
+.city.flipped {
+  transform: scaleX(-1);
 }
 .piece polygon {
   stroke: #000;

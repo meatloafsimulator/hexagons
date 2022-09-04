@@ -46,7 +46,7 @@
 <template id="city">
   <svg class="city piece" viewbox="0 0 8 8">
     <polygon
-      points="5 1 3 3 3 4 1 4 1 7 7 7 7 3"
+      points="3 1 1 3 1 7 7 7 7 4 5 4 5 3"
     ></polygon>
   </svg>
 </template>
@@ -54,10 +54,14 @@
   <div class="player-area">
     <div class="inventory hand resource"></div>
     <div class="inventory hand development"></div>
-    <div class="player-name"></div>
-    <div class="inventory cities"></div>
-    <div class="inventory settlements"></div>
+    <div class="inventory houses"></div>
     <div class="inventory roads"></div>
+    <div class="player-name"></div>
+    <div class="inventory played-cards"></div>
+    <div class="inventory badges">
+      <div class="badge largest-army">Army</div>
+      <div class="badge longest-road">Road</div>
+    </div>
   </div>
 </template>
 <template id="resource">
@@ -70,7 +74,14 @@
 </template>
 <template id="development">
   <div class="card development">
-    <div class="face front"></div>
+    <div class="face front">
+      <div class="icon"><img></div>
+    </div>
     <div class="face back"></div>
   </div>
+</template>
+<template id="robber">
+  <svg class="robber" viewbox="0 0 2 2">
+    <line x1="0" y1="1" x2="2" y2="1"/>
+  </svg>
 </template>
