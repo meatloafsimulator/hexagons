@@ -28,8 +28,8 @@
 }
 
 body {
-/*  position: absolute;*/
-/*  top: 0; left: 0; bottom: 0; right: 0;*/
+  height: 100vh;
+  margin: 0;
   background: var(--bg);
   display: flex;
   flex-direction: row;
@@ -90,16 +90,6 @@ svg {width: inherit; height: inherit;}
   text-align: center;
   background: var(--color-sand);
 }
-.robber {
-/*  outline: solid 3px #000;*/
-/*  opacity: 0.5;*/
-/*  background: #000;*/
-/*  color: var(--color-sand);*/
-/*  box-shadow: inset var(--d) var(--d) #0005;*/
-/*  background: #999;*/
-/*  box-shadow: inset 0 0 0 5px #333;*/
-/*  color: #666;*/
-}
 .chit.robber {
   outline: solid 4px #000;
 }
@@ -125,7 +115,6 @@ svg.robber line {
   width:  300px;
   margin: 0 -150px;
   box-sizing: border-box;
-/*  padding: 15px 0;*/
   display: flex;
   flex-direction: column;
   justify-content: start;
