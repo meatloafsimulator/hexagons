@@ -1,5 +1,5 @@
 import {
-  qs, qsa, ael, aelo, shuffle,
+  qs, qsa, ael, aelo, shuffle, sum,
 } from './utility.js';
 
 
@@ -232,6 +232,7 @@ const playerColors = [
 const playerNames = [
   'Graham', 'Merrill', 'Morgan', 'Bo',
 ];
+const playerVisible = [true, false, false, false];
 const handsResource = [
   [2, 1, 1, 2, 3],
   [3, 0, 1, 0, 1],
@@ -267,28 +268,34 @@ for (const [i, player] of playerColors.entries()) {
   for (const [j, resource] of resources.entries()) {
     for (let n = 0; n < handsResource[i][j]; n++) {
       const card = fromTemplate('#resource');
-      card.classList.add(resource);
-      const src = `img/resource/${resource}.svg`
-      qs('img', card).src = src;
+      if (playerVisible[i]) {
+        card.classList.add(resource);
+        const src = `img/resource/${resource}.svg`
+        qs('img', card).src = src;        
+      } else card.classList.add('unknown');
       qs('.hand.resource', pa).append(card);
     }
   }
-  function makeDevelopmentCard(cardName) {
+  function makeDevelopmentCard(cardName, visible) {
     const card = fromTemplate('#development');
     const type = cardName === 'knight' ? 'knight' :
         cardName.startsWith('vp') ? 'vp' : 'progress';
-    card.classList.add(type);
-    const i = type === 'vp' ? 'vp' : cardName;
-    qs('img', card).src = `img/development/${i}.svg`;
+    if (visible) {
+      card.classList.add(type);
+      const i = type === 'vp' ? 'vp' : cardName;
+      qs('img', card).src =
+          `img/development/${i}.svg`;      
+    } else card.classList.add('unknown');
     return card;
   }
   for (const c of handsDevelopment[i]) {
-    const card = makeDevelopmentCard(c);
+    const visible = playerVisible[i];
+    const card = makeDevelopmentCard(c, visible);
     qs('.hand.development', pa).append(card);
   }
   for (const c of playedCards[i]) {
-    const card = makeDevelopmentCard(c);
-    qs('.played-cards', pa).append(card);
+    const card = makeDevelopmentCard(c, true);
+    qs('.hand.played', pa).append(card);
   }
   for (let n = 0; n < 3; n++) {
     const inv = qs('.inventory.houses', pa);
@@ -383,3 +390,30 @@ for (const player in cities) {
     qs('.on-board').append(svg);
   }
 }
+
+function adjustCards(kind) {
+  const hands = qsa(`.hand.${kind}`);
+  for (const hand of hands) {
+    const types = kind === 'resource' ?
+        [...resources] : ['knight', 'progress', 'vp'];
+    types.push('unknown');
+    const cardsByType = types.map(
+      type => qsa(`.${type}`, hand)
+    );
+    const n = sum(cardsByType.map(x => x.length));
+    const u = sum(cardsByType.map(x => !! x.length));
+    const limit = kind === 'resource' ? 11 :
+        kind === 'development' ? 10 : 7;
+    const adj = n <= limit ? 0 :
+        - Math.ceil(27 * (n - limit) / (n - u));
+    for (const cards of cardsByType) {
+      for (const [j, card] of cards.entries()) {
+        card.style = `--adj: ${j ? adj : 0}px`;
+      }
+    }
+  }
+}
+
+adjustCards('resource');
+adjustCards('development');
+adjustCards('played');

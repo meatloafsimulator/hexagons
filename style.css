@@ -118,6 +118,7 @@ svg.robber line {
   display: flex;
   flex-direction: column;
   justify-content: start;
+/*  outline: solid 1px red;*/
 }
 .player-area.right {
   align-items: end;
@@ -128,7 +129,7 @@ svg.robber line {
 }
 
 .player-name {
-  margin: 5px 2px;
+  margin: 0 1px 5px;
 }
 
 .inventory {
@@ -143,18 +144,14 @@ svg.robber line {
   position: static;
   height: calc(var(--h) / 2);
   width: calc(var(--w) / 2);
-  margin: 0 -2px;
-}
-
-.badges {
-  margin: 3px 0;
+  margin: 0 -1px;
 }
 
 .badge {
   box-sizing: border-box;
   height: 30px;
   width: 60px;
-  margin: 2px;
+  margin: 6px 3px;
   border: solid #f2a900 1px;
   font-size: 18px;
   color: #f2a900;
@@ -186,11 +183,15 @@ svg.robber line {
 }
 .player-area .card {
   --w: 24px;
-  margin: 2px;
+  margin: 0 3px 3px var(--adj, 0);
+}
+.player-area.left .hand {
+  padding-left: 3px;
 }
 
-.opponent .hand .card .front {display: none;}
-.opponent .hand .card .back  {display: block;}
+.card .back {display: none;}
+.card.unknown .front {display: none;}
+.card.unknown .back  {display: block;}
 
 .card .front {
   display: flex;
@@ -212,15 +213,11 @@ svg.robber line {
   width: calc(var(--w) / 2);
 }
 .card.resource .back {
-  display: none;
   background: #002657;
-/*  background: #036;*/
 }
 
 .card.development .front {
-/*  background: #22884c;*/
   background: #ffc;
-/*  background: #d8d4d7;*/
 }
 .card.development .front .icon {
   box-sizing: border-box;
@@ -245,8 +242,6 @@ svg.robber line {
   --color-development: #000;
 }
 .card.development .back {
-  display: none;
-  background: #d5a736;
   background: #ffc;
 }
 
@@ -266,7 +261,7 @@ svg.robber line {
 }
 .inventory .road {
   border-width: 0.75px;
-  margin: 2px;
+  margin: 3px;
 }
 .settlement {
   --h: 48px;
