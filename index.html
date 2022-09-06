@@ -2,7 +2,11 @@
 <html lang="en-US">
 <meta charset="utf-8">
 <title>Hexagons</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="general.css">
+<link rel="stylesheet" href="board.css">
+<link rel="stylesheet" href="cards.css">
+<link rel="stylesheet" href="pieces.css">
+<link rel="stylesheet" href="player-areas.css">
 <script type="module" src="utility.js"></script>
 <script type="module" src="hexagons.js"></script>
 <div class="side-zone left"></div>
@@ -11,33 +15,6 @@
   <div class="on-board"></div>
 </div>
 <div class="side-zone right"></div>
-<!-- <div class="hand resource">
-  <div class="card resource brick">
-    <div class="circle">
-      <img src="img/resource/brick.svg">
-    </div>
-  </div>
-  <div class="card resource wood">
-    <div class="circle">
-      <img src="img/resource/wood.svg">
-    </div>
-  </div>
-  <div class="card resource sheep">
-    <div class="circle">
-      <img src="img/resource/sheep.svg">
-    </div>
-  </div>
-  <div class="card resource wheat">
-    <div class="circle">
-      <img src="img/resource/wheat.svg">
-    </div>
-  </div>
-  <div class="card resource rock">
-    <div class="circle">
-      <img src="img/resource/rock.svg">
-    </div>
-  </div>
-</div> -->
 <template id="settlement">
   <svg class="settlement piece" viewbox="0 0 6 6">
     <polygon points="3 1 1 3 1 5 5 5 5 3"></polygon>
@@ -59,23 +36,27 @@
     <div class="player-name"></div>
     <div class="inventory hand played"></div>
     <div class="inventory badges">
-      <div class="badge largest-army">Army</div>
-      <div class="badge longest-road">Road</div>
+      <div class="badge largest-army centered">
+        army
+      </div>
+      <div class="badge longest-road centered">
+        road
+      </div>
     </div>
   </div>
 </template>
 <template id="resource">
   <div class="card resource">
-    <div class="face front">
-      <div class="circle"><img></div>
+    <div class="face front centered">
+      <div class="circle centered"><img></div>
     </div>
     <div class="face back"></div>
   </div>
 </template>
 <template id="development">
   <div class="card development">
-    <div class="face front">
-      <div class="icon"><img></div>
+    <div class="face front centered">
+      <div class="icon centered"><img></div>
     </div>
     <div class="face back"></div>
   </div>

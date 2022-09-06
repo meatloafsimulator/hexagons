@@ -1,0 +1,72 @@
+.card {
+  box-sizing: border-box;
+  width: var(--w);
+  height: calc(var(--w) * 1.5);
+  --b-w: calc(var(--w) / 24);
+  --b-r: calc(var(--w) / 12);
+  --b-r-inner: calc(var(--b-r) - var(--b-w));
+  border: solid #fff var(--b-w);
+  border-radius: var(--b-r);
+  background: #fff;
+}
+.player-area .card {
+  --w: 24px;
+  margin: 0 3px 3px var(--adj, 0);
+}
+
+.card .face {
+  height: 100%;
+  width: 100%;
+}
+
+.card .back {
+  display: none;
+}
+.card.unknown .front {
+  display: none;
+}
+.card.unknown .back {
+  display: block;
+}
+
+.card.resource .face {
+  background: var(--color-resource);
+  border-radius: var(--b-r-inner);
+}
+.card.resource .circle {
+  --d: calc(var(--w) * 3 / 4);
+  height: var(--d);
+  width: var(--d);
+  background: #ffc;
+}
+.card.resource img {
+  width: calc(var(--w) / 2);
+}
+.card.resource .back {
+  --color-resource: #002657;
+}
+
+.card.development .front .icon {
+  box-sizing: border-box;
+  height: 100%; width: 100%;
+  background: #ffc;
+  border: solid calc(var(--w) / 24)
+      var(--color-development-type);
+  border-radius: var(--b-r-inner);
+}
+.card.development .icon img {
+  width: calc(var(--w) * 3 / 4);
+}
+.card.development.knight {
+  --color-development-type: #6a2a60;
+}
+.card.development.progress {
+  --color-development-type: #22884c;
+}
+.card.development.vp {
+  --color-development-type: #000;
+}
+.card.development .back {
+  background: #ffc;
+  border-radius: var(--b-r-inner);
+}

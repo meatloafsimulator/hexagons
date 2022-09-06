@@ -1,0 +1,58 @@
+.board {
+  position: relative;
+  --oT: 300px;
+  --oL: calc(var(--oT) * 1.1547); /* 2/√3 */
+  height: calc(var(--oT) * 2);
+  width: calc(var(--oL) * 2);
+  --color-sand: #cc9;
+}
+
+.water {
+  fill: #06c;
+}
+.hex {
+  stroke: var(--color-sand);
+  stroke-width: 0.12;
+  fill: var(--color-resource, var(--color-sand));
+}
+.port {
+  stroke: var(--color-sand);
+  stroke-width: 0.08;
+  fill: var(--color-resource, none);
+}
+
+.on-board > * {
+  position: absolute;
+  height: var(--h);
+  width: var(--w);
+  top: calc(var(--t) - var(--h) / 2);
+  left: calc(var(--l) - var(--w) / 2);
+}
+
+.chit {
+  --d: 50px;
+  --h: var(--d);
+  --w: var(--d);
+  line-height: var(--d);
+  text-align: center;
+  background: var(--color-sand);
+}
+.chit.robber {
+  outline: solid 4px #000;
+}
+svg.robber {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: var(--d);
+  width: var(--d);
+}
+svg.robber line {
+  stroke: #000;
+  stroke-width: 0.16;
+}
+
+.debug-label {
+  display: none;
+  font: normal 1px Tahoma;
+}

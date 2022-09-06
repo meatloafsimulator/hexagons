@@ -1,0 +1,37 @@
+.orange {
+  --color-player: #fa4616;
+}
+.blue {
+  --color-player: #0021a5;
+}
+.white {
+  --color-player: #fff;
+}
+.red {
+  --color-player: #d32737;
+}
+
+.road {
+  --h: 60px;
+  --w: 12px;
+  background: var(--color-player);
+  box-sizing: border-box;
+  border: solid 1.5px #000;
+  transform: rotate(calc(-60deg * var(--a)));
+}
+.settlement {
+  --h: 48px;
+  --w: 48px;
+}
+.city {
+  --h: 64px;
+  --w: 64px;
+}
+.city.flipped {
+  transform: scaleX(-1);
+}
+.piece polygon {
+  stroke: #000;
+  stroke-width: 0.1875;
+  fill: var(--color-player);
+}

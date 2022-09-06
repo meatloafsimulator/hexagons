@@ -1,0 +1,53 @@
+:root {
+  --color-bg: #97999c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #4c4e51;
+  }
+  .board,
+  .hand,
+  .inventory {
+    filter: brightness(75%);
+  }
+}
+
+body {
+  height: 100vh;
+  margin: 0;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
+  user-select: none;
+  font: normal 24px Tahoma;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.brick {
+  --color-resource: #930;
+}
+.wood {
+  --color-resource: #063;
+}
+.sheep {
+  --color-resource: #6c0;
+}
+.wheat {
+  --color-resource: #f90;
+}
+.rock {
+  --color-resource: #666;
+}

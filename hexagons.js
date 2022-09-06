@@ -233,6 +233,7 @@ const playerNames = [
   'Graham', 'Merrill', 'Morgan', 'Bo',
 ];
 const playerVisible = [true, false, false, false];
+// const playerVisible = [true, true, true, true];
 const handsResource = [
   [2, 1, 1, 2, 3],
   [3, 0, 1, 0, 1],

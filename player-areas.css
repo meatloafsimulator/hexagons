@@ -1,0 +1,64 @@
+.player-area {
+  height: 300px;
+  width:  300px;
+  margin: 0 -150px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+.player-area.right {
+  align-items: end;
+}
+.player-area.bottom {
+  flex-direction: column-reverse;
+  justify-content: end;
+}
+
+.player-name {
+  margin: 0 1px 5px;
+}
+
+.player-area.left .hand {
+  padding-left: 3px;
+}
+
+.inventory {
+  display: flex;
+  align-items: end;
+}
+.player-area.right .inventory.houses {
+  flex-direction: row-reverse;
+}
+
+.inventory .piece {
+  height: calc(var(--h) / 2);
+  width: calc(var(--w) / 2);
+}
+.inventory .piece:not(.road) {
+  margin: 0 -1px;  
+}
+.inventory .road {
+  border-width: 0.75px;
+  margin: 3px;
+}
+
+.badge {
+  box-sizing: border-box;
+  height: 30px;
+  width: 60px;
+  margin: 6px 3px;
+  border: solid #f2a900 1px;
+  font-size: 18px;
+  color: #f2a900;
+  text-transform: uppercase;
+}
+.badge:not(.awarded) {
+  display: none;
+}
+.largest-army {
+  background: #6a2a60;
+}
+.longest-road {
+  background: #343741;
+}
