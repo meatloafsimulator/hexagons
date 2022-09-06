@@ -117,8 +117,9 @@ for (let i = 0; i < 6; i++) {
 const portTypes = shuffle([...resources, 0, 0, 0, 0]);
 
 
-function fromTemplate(selector) {
-  const node = qs(selector).content.firstElementChild;
+function fromTemplate(className) {
+  const fragment = qs(`template.${className}`);
+  const node = fragment.content.firstElementChild;
   return node.cloneNode(true);
 }
 
@@ -192,7 +193,7 @@ for (const [i, c] of centers.entries()) {
   d.innerHTML = chits[i] || '';
   if (robber === i) {
     d.classList.add('robber');
-    d.append(fromTemplate('#robber'));
+    d.append(fromTemplate('robber'));
   }
   qs('.on-board').append(d);
 }
@@ -260,7 +261,7 @@ const developmentRemaining = [
 ];
 
 for (const [i, player] of playerColors.entries()) {
-  const pa = fromTemplate('#player-area');
+  const pa = fromTemplate('player-area');
   pa.classList.add(player);
   if (i) pa.classList.add('opponent');
   const side = i < 2 ? 'left' : 'right';
@@ -268,7 +269,7 @@ for (const [i, player] of playerColors.entries()) {
   qs('.player-name', pa).innerHTML = playerNames[i];
   for (const [j, resource] of resources.entries()) {
     for (let n = 0; n < handsResource[i][j]; n++) {
-      const card = fromTemplate('#resource');
+      const card = fromTemplate('resource');
       if (playerVisible[i]) {
         card.classList.add(resource);
         const src = `img/resource/${resource}.svg`
@@ -278,7 +279,7 @@ for (const [i, player] of playerColors.entries()) {
     }
   }
   function makeDevelopmentCard(cardName, visible) {
-    const card = fromTemplate('#development');
+    const card = fromTemplate('development');
     const type = cardName === 'knight' ? 'knight' :
         cardName.startsWith('vp') ? 'vp' : 'progress';
     if (visible) {
@@ -300,7 +301,7 @@ for (const [i, player] of playerColors.entries()) {
   }
   for (let n = 0; n < 3; n++) {
     const inv = qs('.inventory.houses', pa);
-    const svg = fromTemplate('#city');
+    const svg = fromTemplate('city');
     svg.classList.add(player);
     if (pa.classList.contains('right')) {
       svg.classList.add('flipped');
@@ -309,7 +310,7 @@ for (const [i, player] of playerColors.entries()) {
   }
   for (let n = 0; n < 4; n++) {
     const inv = qs('.inventory.houses', pa);
-    const svg = fromTemplate('#settlement');
+    const svg = fromTemplate('settlement');
     svg.classList.add(player);
     inv.append(svg);
   }
@@ -363,7 +364,7 @@ const settlements = {
 for (const player in settlements) {
   for (const s of settlements[player]) {
     const [l, t] = convertCoordinates(sites[s]);
-    const svg = fromTemplate('#settlement');
+    const svg = fromTemplate('settlement');
     svg.classList.add(player);
     const style = `--l: ${l}; --t: ${t};`;
     svg.setAttribute('style', style);
@@ -380,7 +381,7 @@ const cities = {
 for (const player in cities) {
   for (const c of cities[player]) {
     const [l, t] = convertCoordinates(sites[c]);
-    const svg = fromTemplate('#city');
+    const svg = fromTemplate('city');
     svg.classList.add(player);
     const style = `--l: ${l}; --t: ${t};`;
     svg.setAttribute('style', style);
