@@ -1,10 +1,11 @@
-function qs(selector, parent = document) {
+export function qs(selector, parent = document) {
   return parent.querySelector(selector);
 }
-function qsa(selector, parent = document) {
+export function qsa(selector, parent = document) {
   return [...parent.querySelectorAll(selector)];
 }
-function ael(x, type, fn) {
+
+export function ael(x, type, fn) {
   const f = e => {
     e.preventDefault();
     fn.bind(x)();
@@ -12,7 +13,7 @@ function ael(x, type, fn) {
   const element = typeof x === 'object' ? x : qs(x);
   element.addEventListener(type, f);
 }
-function aelo(x, type, fn) {
+export function aelo(x, type, fn) {
   const f = e => {
     e.preventDefault();
     fn.bind(x)();
@@ -20,7 +21,11 @@ function aelo(x, type, fn) {
   const element = typeof x === 'object' ? x : qs(x);
   element.addEventListener(type, f, {once: true});
 }
-function shuffle(arr, prng = Math.random) {
+
+export function draw(arr, prng = Math.random) {
+  return arr[Math.floor(prng() * arr.length)];
+}
+export function shuffle(arr, prng = Math.random) {
   const result = [];
   const remaining = [...arr];
   while (remaining.length) result.push(
@@ -28,8 +33,13 @@ function shuffle(arr, prng = Math.random) {
   );
   return result;
 }
-function sum(arr) {
+
+export function sum(arr) {
   return arr.reduce((a, e) => a + e);
 }
-
-export {qs, qsa, ael, aelo, shuffle, sum};
+export function rep(element, nTimes) {
+  return new Array(nTimes).fill(element);
+}
+export function seq(n) {
+  return new Array(n).fill().map((e, i) => i);
+}

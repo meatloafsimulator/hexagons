@@ -1,13 +1,7 @@
-import {
-  qs, qsa, ael, aelo, shuffle, sum,
-} from './utility.js';
+import {qs, qsa, shuffle, sum} from './utility.js';
+import {resources, w} from './constants.js';
 
-
-const resources = [
-  'brick', 'wood', 'sheep', 'wheat', 'rock',
-];
-
-const w = Math.sqrt(3);
+import './make-board.js';
 
 const sites = [];
 {
