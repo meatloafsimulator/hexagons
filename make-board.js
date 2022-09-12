@@ -1,75 +1,66 @@
-import {rep, seq, draw, shuffle} from './utility.js';
+import {
+  sum, count, unique, rep, seq,
+  draw, shuffle, sample,
+} from './utility.js';
 import {resources} from './constants.js';
 
-function makePortLocations(novelty = 1) {
-  let isPort = [];
+function makePortLocations(variability = 1) {
+  // Arrangements on frame pieces
   const a0 = [0, 1, 0, 0, 1];
   const a1 = [0, 0, 1, 0, 0];
-  if (! novelty) return rep([a0, a1], 3).flat(2);
-  if (novelty === 1) {
+  if (! variability) return rep([a0, a1], 3).flat(2);
+  if (variability === 1) {
     const framePiece = shuffle([0, 0, 0, 1, 1, 1]);
     return framePiece.map(x => x ? a1 : a2).flat();
   }
-  if (novelty === 2) {
-    const bay = rep([1, 1, 0], 6).flat();
-    const fBay = () => shuffle([0, draw([0, 1])]);
-    const fCape = () => draw([0, 1]);
-    return bay.map(x => x ? fBay() : fCape()).flat();
-  }
-  if (! novelty) {
-    // for (let i = 0; i < 3; i++) {
-    //   isPort.push(0, 1, 0, 0, 1);
-    //   isPort.push(0, 0, 1, 0, 0);
-    // }
-  } else if (novelty === 1) {
-    // const hasOnePort = shuffle([0, 0, 0, 1, 1, 1]);
-    // for (let i = 0; i < 6; i++) {
-    //   if (hasOnePort[i]) isPort.push(0, 0, 1, 0, 0);
-    //   else isPort.push(0, 1, 0, 0, 1);
-    // }
-  } else if (novelty === 2) {
-    // for (let i = 0; i < 6; i++) {
-    //   for (let j = 0; j < 2; j++) {
-    //     isPort.push(...shuffle(
-    //       draw([0, 1]) ? [0, 1] : [0, 0]
-    //     ));
-    //   }
-    //   isPort.push(draw([0, 1]));
-    // }
-  } else {
-    // Dirichlet stuff goes here
-  }
-  return isPort;
+  const conc = concentration(variability, 18);
+  const alpha = rep(conc / 2, 2);
+  const p = variability === 2 ? 0.5 :
+      variability === 4 ? draw([0, 1]) :
+      rDirichlet(alpha)[0];
+  const f = () => +(Math.random() < p);
+  // Two-edge side bays and one-edge corner capes
+  const isBay = rep([1, 1, 0], 6).flat();
+  // No more than one port per bay
+  const fBay = () => shuffle([0, f()]);
+  return isBay.map(x => x ? fBay() : f()).flat();
 }
 
 function makePortTypes(n, variability = 1) {
-  const types = [...resources, ...rep('generic', 4)];
-  let portType = [];
-  if (! variability) {
-    portType = [
-      'sheep', 'generic', 'rock', 'wheat', 'generic',
-      'wood', 'brick', 'generic', 'generic',
-    ];
-  } else if (variability === 1) {
-    portType = shuffle(types);
-  } else if (variability === 2) {
-    for (let i = 0; i < n; i++) {
-      portType.push(draw(types));
+  // Fixed arrangement
+  const a = [
+    'sheep', 'generic', 'rock', 'wheat', 'generic',
+    'wood', 'brick', 'generic', 'generic',
+  ];
+  if (variability <= 1) {
+    const result = variability ? shuffle(a) : [...a];
+    // Adjust if n ≠ 9
+    {
+      let extra = [];
+      while (result.length < n) {
+        if (! extra.length) extra = shuffle(a);
+        result.splice(
+          draw(seq(result.length + 1)), 0, extra.pop()
+        );
+      }
+      while (result.length > n) {
+        result.splice(draw(seq(result.length)), 1);
+      }
     }
-  } else {
-    // Dirichlet stuff goes here
+    return result;
   }
-  const extra = [];
-  while (portType.length < n) {
-    if (! extra.length) extra.push(...shuffle(types));
-    portType.splice(
-      draw(seq(portType.length + 1)), 0, extra.pop()
-    );
-  }
-  while (portType.length > n) {
-    portType.splice(draw(seq(portType.length)), 1);
-  }
-  return portType;
+  // const u = [...resources, 'generic'];
+  // const freq = u.map(x => count(a, x) / a.length);
+  // const conc = concentration(variability, n);
+  // const alpha = freq.map(x => x * conc);
+  // let p;
+  // if (variability === 2) p = freq;
+  // else if (variability === 4) {
+  //   const d = draw(a);
+  //   p = u.map(x => +(x === d));
+  // } else p = rDirichlet(alpha);
+  // return rep(0, n).map(x => sample(u, p));
+  return pickViaDirichlet(a, n, variability);
 }
 
 function makeHexes(variability = 1) {
@@ -80,23 +71,58 @@ function makeHexes(variability = 1) {
     'brick', 'sheep', 'sheep', 'rock',
     'rock', 'wheat', 'wood',
   ];
-  if (variability === 0) return [...a];
+  if (! variability) return [...a];
   if (variability === 1) return shuffle(a);
-  if (variability === 2) return a.map(x => draw(a));
+  return pickViaDirichlet(a, a.length, variability);
+  // const u = [...resources, 'desert'];
+  // const freq = u.map(x => count(a, x) / a.length);
+  // const conc = concentration(variability, a.length);
+  // const alpha = freq.map(x => x * conc);
+  // let p;
+  // if (variability === 2) p = freq;
+  //
+  //
+  // if (variability === 2) return a.map(x => draw(a));
   // Dirichlet stuff goes here
 }
 
-function rDirichlet(alpha, prng = Math.random) {
-  
+function pickViaDirichlet(a, n, variability) {
+  const u = unique(a);
+  const freq = u.map(x => count(a, x) / a.length);
+  const conc = concentration(variability, n);
+  const alpha = freq.map(x => x * conc);
+  let p;
+  if (variability === 2) p = freq;
+  else if (variability === 4) {
+    const d = draw(a);
+    p = u.map(x => +(x === d));
+  } else p = rDirichlet(alpha);
+  return rep(0, n).map(x => sample(u, p));
 }
-// z = log w / log n
-// w = (a + n) / (a + 1)
-// aw + w = a + n
-// a = (n - w) / (w - 1)
-// w = exp(z log n) = n ^ z
-// a = (n - n^z) / (n^z - 1)
-function rGamma(alpha, prng = Math.random) {
-  
+function concentration(variability, n) {
+  const z = variability / 2 - 1;
+  return (n - n ** z) / (n ** z - 1);
+}
+function rDirichlet(alpha, prng = Math.random) {
+  const g = alpha.map(x => rGamma(x, prng));
+  return g.map(x => x / sum(g));
+}
+function rGamma(shape, prng = Math.random) {
+  let r = 0;
+  const k = Math.floor(shape);
+  for (let i = 0; i < k; i++) r -= Math.log(prng());
+  if (shape === k) return r;
+  const d = shape - k;
+  let xi, eta;
+  do {
+    let [u, v, w] = [prng(), prng(), prng()];
+    const cond = u < Math.E / (Math.E + d);
+    xi = cond ? v ** (1 / d) : 1 - Math.log(v);
+    eta = w * (cond ? xi ** (d - 1) : Math.exp(- xi));
+  } while (eta > (xi ** (d - 1)) * Math.exp(- xi));
+  return r + xi;
 }
 
-console.log(makePortLocations(2));
+console.log(makePortTypes(12, 3));
+// console.log(sum(rep(0, 1000).map(x => rGamma(0.1))));
+console.log(makeHexes(3).sort());
