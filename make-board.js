@@ -2,7 +2,16 @@ import {
   sum, count, unique, rep, seq,
   draw, shuffle, sample,
 } from './utility.js';
-import {resources} from './constants.js';
+import {centers} from './geometry.js';
+
+export function makeBoard(variability = 1) {
+  const pl = makePortLocations(variability);
+  const pt = makePortTypes(sum(pl), variability);
+  const h = makeHexes(variability);
+  const c = makeChits(h, variability);
+  const p = pl.map(x => x ? pt.shift() : '');
+  return {ports: p, hexes: h, chits: c};
+}
 
 function makePortLocations(variability = 1) {
   // Arrangements on frame pieces
@@ -11,7 +20,7 @@ function makePortLocations(variability = 1) {
   if (! variability) return rep([a0, a1], 3).flat(2);
   if (variability === 1) {
     const framePiece = shuffle([0, 0, 0, 1, 1, 1]);
-    return framePiece.map(x => x ? a1 : a2).flat();
+    return framePiece.map(x => x ? a0 : a1).flat();
   }
   const conc = concentration(variability, 18);
   const alpha = rep(conc / 2, 2);
@@ -25,7 +34,6 @@ function makePortLocations(variability = 1) {
   const fBay = () => shuffle([0, f()]);
   return isBay.map(x => x ? fBay() : f()).flat();
 }
-
 function makePortTypes(n, variability = 1) {
   // Fixed arrangement
   const a = [
@@ -49,20 +57,8 @@ function makePortTypes(n, variability = 1) {
     }
     return result;
   }
-  // const u = [...resources, 'generic'];
-  // const freq = u.map(x => count(a, x) / a.length);
-  // const conc = concentration(variability, n);
-  // const alpha = freq.map(x => x * conc);
-  // let p;
-  // if (variability === 2) p = freq;
-  // else if (variability === 4) {
-  //   const d = draw(a);
-  //   p = u.map(x => +(x === d));
-  // } else p = rDirichlet(alpha);
-  // return rep(0, n).map(x => sample(u, p));
   return pickViaDirichlet(a, n, variability);
 }
-
 function makeHexes(variability = 1) {
   const a = [
     'wood', 'sheep', 'wheat',
@@ -74,16 +70,62 @@ function makeHexes(variability = 1) {
   if (! variability) return [...a];
   if (variability === 1) return shuffle(a);
   return pickViaDirichlet(a, a.length, variability);
-  // const u = [...resources, 'desert'];
-  // const freq = u.map(x => count(a, x) / a.length);
-  // const conc = concentration(variability, a.length);
-  // const alpha = freq.map(x => x * conc);
-  // let p;
-  // if (variability === 2) p = freq;
-  //
-  //
-  // if (variability === 2) return a.map(x => draw(a));
-  // Dirichlet stuff goes here
+}
+function makeChits(hexes, variability = 1) {
+  const a = [
+    11, 12, 9, 4, 6, 5, 10, null, 3,
+    11, 4, 8, 8, 10, 9, 3, 5, 2, 6,
+  ];
+  const aNoNull = a.filter(x => x);
+  const nDeserts = count(hexes, 'desert');
+  if (variability <= 1) {
+    const result = variability ? shuffle(a) : [...a];
+    // Remove chits on deserts and store as unused
+    let unused = [];
+    for (let i = 0; i < a.length; i++) {
+      if (hexes[i] !== 'desert') continue;
+      unused.push(result[i]);
+      result[i] = null;
+    }
+    // If no deserts, put extra chit in unused
+    if (! nDeserts) unused.push(draw(aNoNull));
+    // Shuffle unused and put on hexes as needed
+    unused = shuffle(unused);
+    for (let i = 0; i < a.length; i++) {
+      if (hexes[i] === 'desert') continue;
+      if (! result[i]) result[i] = unused.pop();
+    }
+    // Prevent adjacent sixes/eights
+    const adjacent = [];
+    for (let i = 0; i < a.length; i++) {
+      const [xi, yi] = centers[i];
+      for (let j = i + 1; j < a.length; j++) {
+        const [xj, yj] = centers[j];
+        const xAdj = Math.abs(xi - xj) < 3;
+        const yAdj = Math.abs(yi - yj) < 4;
+        if (xAdj && yAdj) adjacent.push([i, j]);
+      }
+    }
+    const red = u => Math.abs(result[u] - 7) === 1;
+    while (true) {
+      const bad = adjacent.filter(e => e.every(red));
+      if (! bad.length) break;
+      const i = draw(bad.flat());
+      const j = draw(
+        seq(a.length).filter(u => ! red(u))
+      );
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+  const resultNoNull = pickViaDirichlet(
+    aNoNull, a.length - nDeserts, variability
+  );
+  const result = [];
+  for (let i = 0; i < a.length; i++) result.push(
+    hexes[i] === 'desert' ? null : resultNoNull.pop()
+  );
+  return result;
 }
 
 function pickViaDirichlet(a, n, variability) {
@@ -122,7 +164,3 @@ function rGamma(shape, prng = Math.random) {
   } while (eta > (xi ** (d - 1)) * Math.exp(- xi));
   return r + xi;
 }
-
-console.log(makePortTypes(12, 3));
-// console.log(sum(rep(0, 1000).map(x => rGamma(0.1))));
-console.log(makeHexes(3).sort());

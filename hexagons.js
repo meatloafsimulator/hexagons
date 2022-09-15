@@ -1,50 +1,10 @@
 import {qs, qsa, shuffle, sum} from './utility.js';
-import {resources, w} from './constants.js';
-
-import './make-board.js';
-
-const sites = [];
-{
-  const abbr = {};
-  abbr[0] = [-8, -4, -2, 2, 4, 8];
-  abbr[1] = [-7, -5, -1, 1, 5, 7];
-  abbr[2] = [...abbr[0]];
-  abbr[3] = [...abbr[1]];
-  abbr[-1] = [...abbr[1]];
-  abbr[-2] = [...abbr[0]];
-  abbr[-3] = [...abbr[1]];
-  abbr[4] = [...abbr[0]].slice(1, 5);
-  abbr[-4] = [...abbr[4]];
-  abbr[5] = [...abbr[1]].slice(2, 4);
-  abbr[-5] = [...abbr[5]];
-  for (let x = -5; x <= 5; x++) {
-    for (const y of abbr[x]) sites.push([x, y]);
-  }
-}
-
-const centers = [];
-{
-  const abbr = {};
-  abbr[0] = [-4, -2, 0, 2, 4];
-  abbr[3] = [-3, -1, 1, 3];
-  abbr[-3] = [...abbr[3]];
-  abbr[6] = [...abbr[0]].slice(1, 4);
-  abbr[-6] = [...abbr[6]];
-  for (const y of [-6, -3, 0, 3, 6]) {
-    for (const x of abbr[y]) centers.push([x, y]);
-  }
-}
-
-const hexSites = centers.map(c => {
-  const rel = [
-    [1, 1], [0, 2], [-1, 1],
-    [-1, -1], [0, -2], [1, -1],
-  ];
-  return rel.map(r => sites.findIndex(
-    s => s[0] === c[0] + r[0] && s[1] === c[1] + r[1]
-  ));
-});
-
+import {resources} from './constants.js';
+import {
+  w, sites, centers, hexSites, frameVertices,
+  convertCoordinates,
+} from './geometry.js';
+import {makeBoard} from './make-board.js';
 
 const hexCount = {
   brick: 3, wood: 4, sheep: 4, wheat: 4, rock: 3,
@@ -64,14 +24,6 @@ const chits = shuffle([
 chits.splice(hexTypes.indexOf('desert'), 0, 0);
 
 const robber = Math.floor(Math.random() * 19);
-
-const frameVertices = [
-  [6, 0], [3, 9], [-3, 9], [-6, 0], [-3, -9], [3, -9],
-];
-frameVertices.sort(
-  (a, b) => Math.atan2(...a) - Math.atan2(...b)
-);
-
 
 const neighbors = [];
 for (let i = 0; i < sites.length; i++) {
@@ -168,15 +120,6 @@ for (const [i, [x, y]] of centers.entries()) {
   t.setAttribute('y', y);
   t.innerHTML = i;
   svg.append(t);
-}
-
-function convertCoordinates(svgCoords) {
-  const hh = 300;
-  const [x, y] = svgCoords;
-  return [
-    `${(x / 6 + 1) * hh * 2 / Math.sqrt(3)}px`,
-    `${(y / 9 + 1) * hh}px`,
-  ];
 }
 
 for (const [i, c] of centers.entries()) {
