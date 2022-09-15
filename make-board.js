@@ -2,6 +2,7 @@ import {
   sum, count, unique, rep, seq,
   draw, shuffle, sample,
 } from './utility.js';
+import {resources} from './constants.js';
 import {centers} from './geometry.js';
 
 export function makeBoard(variability = 1) {
@@ -11,6 +12,32 @@ export function makeBoard(variability = 1) {
   const c = makeChits(h, variability);
   const p = pl.map(x => x ? pt.shift() : '');
   return {ports: p, hexes: h, chits: c};
+}
+export function boardCode(board) {
+  const {ports, hexes, chits} = board;
+  const codeCharacter = seq(52).map(
+    x => String.fromCharCode(x + (x < 26 ? 65 : 71))
+  );
+  let result = '00';
+  for (let i = 0; i < ports.length / 2; i++) {
+    const portPair = ports.slice(i * 2, i * 2 + 2);
+    const ints = [];
+    for (const type of portPair) {
+      const t = resources.indexOf(type);
+      ints.push(
+        t > -1 ? t : type === 'generic' ? 5 : 6
+      );
+    }
+    result += codeCharacter[ints[0] * 7 + ints[1]];
+  }
+  for (const [i, type] of hexes.entries()) {
+    const k = chits[i];
+    const t = resources.indexOf(type);
+    result += codeCharacter[
+      t > -1 ? t * 10 + k - (k < 7 ? 2 : 3) : 50
+    ];
+  }
+  return result;
 }
 
 function makePortLocations(variability = 1) {
@@ -111,9 +138,9 @@ function makeChits(hexes, variability = 1) {
       const bad = adjacent.filter(e => e.every(red));
       if (! bad.length) break;
       const i = draw(bad.flat());
-      const j = draw(
-        seq(a.length).filter(u => ! red(u))
-      );
+      const j = draw(seq(a.length).filter(
+        u => ! red(u) && result[u]
+      ));
       [result[i], result[j]] = [result[j], result[i]];
     }
     return result;

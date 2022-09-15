@@ -44,9 +44,16 @@ export const hexSites = centers.map(c => {
 
 export const frameVertices = [
   [6, 0], [3, 9], [-3, 9], [-6, 0], [-3, -9], [3, -9],
-].sort(
-  (a, b) => Math.atan2(...a) - Math.atan2(...b)
+];
+frameVertices.sort((a, b) => angle(a) - angle(b));
+
+export const coast = sites.map((e, i) => i).filter(
+  u => Math.hypot(sites[u][0] * w, sites[u][1]) > 6
 );
+coast.sort(
+  (a, b) => angle(sites[a]) - angle(sites[b])
+);
+while (coast[0] !== 36) coast.unshift(coast.pop());
 
 export function convertCoordinates(svgCoords) {
   const hh = 300;
@@ -55,4 +62,8 @@ export function convertCoordinates(svgCoords) {
     `${(x / 6 + 1) * hh * 2 / Math.sqrt(3)}px`,
     `${(y / 9 + 1) * hh}px`,
   ];
+}
+
+function angle(coords) {
+  return Math.atan2(...coords);
 }
