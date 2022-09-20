@@ -27,6 +27,7 @@
   width: var(--w);
   top: calc(var(--t) - var(--h) / 2);
   left: calc(var(--l) - var(--w) / 2);
+  pointer-events: none;
 }
 
 .chit {

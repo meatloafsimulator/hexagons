@@ -8,7 +8,7 @@ export function qsa(selector, parent = document) {
 export function ael(x, type, fn) {
   const f = e => {
     e.preventDefault();
-    fn.bind(x)();
+    fn.bind(x, e)();
   }
   const element = typeof x === 'object' ? x : qs(x);
   element.addEventListener(type, f);
@@ -16,7 +16,7 @@ export function ael(x, type, fn) {
 export function aelo(x, type, fn) {
   const f = e => {
     e.preventDefault();
-    fn.bind(x)();
+    fn.bind(x, e)();
   }
   const element = typeof x === 'object' ? x : qs(x);
   element.addEventListener(type, f, {once: true});

@@ -1,6 +1,6 @@
 .card {
   box-sizing: border-box;
-  width: var(--w);
+  min-width: var(--w);
   height: calc(var(--w) * 1.5);
   --b-w: calc(var(--w) / 24);
   --b-r: calc(var(--w) / 12);
