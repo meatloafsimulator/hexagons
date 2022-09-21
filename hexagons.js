@@ -9,9 +9,6 @@ import {
 import {makeBoard, boardCode} from './make-board.js';
 import {renderBoard} from './render-board.js';
 
-const board = makeBoard(1);
-renderBoard(board);
-
 function fromTemplate(className) {
   const fragment = qs(`template.${className}`);
   const node = fragment.content.firstElementChild;
@@ -35,7 +32,7 @@ function makePlayerArea(i, color) {
   }
 }
 
-function showPlayerName(color, playerName) {
+export function showPlayerName(color, playerName) {
   const pn = qs(`.player-area.${color} .player-name`);
   pn.innerHTML = playerName;
 }
@@ -49,7 +46,7 @@ function moveRobber(hex) {
   );
 }
 
-function placeHouse(color, type, site) {
+export function placeHouse(color, type, site) {
   const siteClassString = `site-${site}`;
   qs(`.piece.${siteClassString}`)?.remove();
   const [l, t] = convertCoordinates(sites[site]);
@@ -64,7 +61,7 @@ function placeHouse(color, type, site) {
   qs('.on-board').append(e);
 }
 
-function placeRoad(color, site0, site1) {
+export function placeRoad(color, site0, site1) {
   const [s0, s1] = [site0, site1].map(s => sites[s]);
   const center = [0, 1].map(i => (s0[i] + s1[i]) / 2);
   const [l, t] = convertCoordinates(center);
@@ -105,7 +102,7 @@ function makeCard(kind, cardName) {
   return card;
 }
 
-function gainCard(color, loc, cardName) {
+export function gainCard(color, loc, cardName) {
   const kind = loc === 'played' ? 'development' : loc;
   const card = makeCard(kind, cardName);
   const sel = `.player-area.${color} .hand.${loc}`;
@@ -146,7 +143,7 @@ function adjustCards(kind) {
   }
 }
 
-function awardBadge(color, type) {
+export function awardBadge(color, type) {
   qs(`.${type}.awarded`)?.classList.remove('awarded');
   if (! color) return;
   const badge = qs(`.player-area.${color} .${type}`);
@@ -168,8 +165,8 @@ for (let i = 0; i < sites.length; i++) {
 
 
 
-const svg = qs('.board svg');
-const ns = svg.namespaceURI;
+const board = makeBoard(1);
+renderBoard(board);
 
 const robber = draw(seq(board.hexes.length).filter(
   x => board.hexes[x] === 'desert'
@@ -179,117 +176,17 @@ if (robber > -1) moveRobber(robber);
 const playerColor = [
   'orange', 'blue', 'white', 'red',
 ];
-const playerVisible = {
-  orange: true,
-};
 
 for (const [i, color] of playerColor.entries()) {
   makePlayerArea(i, color);
 }
 
-const roads = {
-  orange: [
-    [33, 27], [27, 21], [21, 20], [20, 14], [14, 13]
-  ],
-  blue: [[31, 37], [37, 43], [24, 18], [18, 12]],
-  white: [[3, 8], [8, 14], [15, 9], [9, 8]],
-  red: [[10, 5], [5, 4], [40, 34], [34, 28]],
-};
-for (const player in roads) {
-  for (const road of roads[player]) {
-    placeRoad(player, ...road);
-  }
-}
-
-const settlements = {
-  orange: [20],
-  blue: [24],
-  white: [15],
-  red: [40],
-};
-for (const player in settlements) {
-  for (const s of settlements[player]) {
-    placeHouse(player, 'settlement', s);
-  }
-}
-
-const cities = {
-  orange: [33],
-  blue: [31],
-  white: [3],
-  red: [10],
-};
-for (const player in cities) {
-  for (const c of cities[player]) {
-    placeHouse(player, 'city', c);
-  }
-}
-
-const handsR = {
-  orange: [2, 1, 1, 2, 3],
-  blue:   [3, 0, 1, 0, 1],
-  white:  [0, 3, 0, 1, 0],
-  red:    [0, 0, 2, 3, 0],
-};
-for (const [color, hand] of Object.entries(handsR)) {
-  for (const [i, resource] of resources.entries()) {
-    for (let n = 0; n < hand[i]; n++) {
-      const cardName = playerVisible[color] ?
-          resource : null;
-      gainCard(color, 'resource', cardName);
-    }
-  }  
-}
-
-const handsD = {
-  orange: ['knight', 'vp-palace', 'vp-university'],
-  blue: ['vp-market'],
-  white: ['knight', 'knight'],
-  red: ['knight', 'knight', 'knight', 'vp-library'],
-};
-for (const [color, hand] of Object.entries(handsD)) {
-  for (const card of hand) {
-    const cardName =
-        playerVisible[color] ? card : null;
-    gainCard(color, 'development', cardName);
-  }
-}
-
-const playedD = {
-  orange: [
-    'knight', 'knight', 'knight',
-    'road-building', 'monopoly', 'year-of-plenty',
-  ],
-  blue: ['knight', 'road-building'],
-  white: ['knight', 'year-of-plenty'],
-  red: ['knight', 'knight', 'monopoly'],
-};
-for (const [color, arr] of Object.entries(playedD)) {
-  for (const card of arr) {
-    gainCard(color, 'played', card);
-  }
-}
-
-const remainingD = ['knight', 'vp-chapel'];
-
-awardBadge('orange', 'largest-army');
-awardBadge('orange', 'longest-road');
-
-const names = {
-  orange: 'Graham',
-  blue: 'Merrill',
-  white: 'Morgan',
-  red: 'Bo',
-};
-for (const [color, nm] of Object.entries(names)) {
-  showPlayerName(color, nm);
-}
-
+// ael('.board', 'click', e => console.log(
+//   e.offsetX, e.offsetY
+// ));
+import {showExampleGame} from './example.js';
+showExampleGame();
 
 adjustCards('resource');
 adjustCards('development');
 adjustCards('played');
-
-// ael('.board', 'click', e => console.log(
-//   e.offsetX, e.offsetY
-// ));

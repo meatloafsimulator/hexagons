@@ -18,6 +18,10 @@
   box-sizing: border-box;
   border: solid 1.5px #000;
   transform: rotate(calc(-60deg * var(--a)));
+  z-index: 0;
+}
+.piece:not(.road) {
+  z-index: 1;
 }
 .settlement {
   --h: 48px;
