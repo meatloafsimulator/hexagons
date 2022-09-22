@@ -15,43 +15,86 @@
   justify-content: end;
 }
 
-.player-name {
-  margin: 0 1px 5px;
-}
-
-.player-area.left .hand {
-  padding-left: 3px;
-}
-
-.inventory {
+.player-area > div {
   display: flex;
+}
+
+.player-area .username {
+  margin: 3px 0;
+}
+
+.player-area .hand {
+  height: 40px;
+}
+.player-area.bottom .hand {
   align-items: end;
 }
-.player-area.right .inventory.houses {
-  flex-direction: row-reverse;
+.player-area .card {
+  --w: 24px;
+  margin: 0 2px 0 var(--adj, 0);
+}
+.player-area.right .card:last-child {
+  margin-right: 0;
 }
 
-.inventory .piece {
+.houses {
+  align-items: end;
+  height: 28px;
+}
+.player-area.right .houses {
+  flex-direction: row-reverse;
+}
+.player-area .piece {
   height: calc(var(--h) / 2);
   width: calc(var(--w) / 2);
 }
-.inventory .piece:not(.road) {
-  margin: 0 -1px;  
+.player-area .piece:not(.road) {
+  margin: -2px;
 }
-.inventory .road {
+.roads {
+  height: 32px;
+}
+.player-area.top .roads {
+  align-items: end;
+}
+.player-area .road {
   border-width: 0.75px;
-  margin: 3px;
+  margin: 0 2px;
+}
+.player-area.left .piece:not(.road):first-child {
+  margin-left: -4px;
+}
+.player-area.left .road:first-child {
+  margin-left: 0;
+}
+.player-area.right .piece:not(.road):first-child {
+  margin-right: -4px;
+}
+.player-area.right .road:last-child {
+  margin-right: 0;
 }
 
+.badges {
+  height: 40px;
+}
+.player-area.bottom .badges {
+  align-items: end;
+}
 .badge {
   box-sizing: border-box;
   height: 30px;
-  width: 60px;
-  margin: 6px 3px;
+  width: 72px;
+  margin: 3px 0;
   border: solid #f2a900 1px;
-  font-size: 18px;
   color: #f2a900;
   text-transform: uppercase;
+  --sep: 6px;
+}
+.player-area.left .badge {
+  margin-right: var(--sep);
+}
+.player-area.right .badge {
+  margin-left: var(--sep);
 }
 .badge:not(.awarded) {
   display: none;

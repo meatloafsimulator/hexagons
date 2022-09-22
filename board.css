@@ -36,6 +36,7 @@
   --w: var(--d);
   line-height: var(--d);
   text-align: center;
+  font-size: 24px;
   background: var(--color-sand);
 }
 .chit.robber {

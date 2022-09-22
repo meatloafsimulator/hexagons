@@ -9,10 +9,6 @@
   border-radius: var(--b-r);
   background: #fff;
 }
-.player-area .card {
-  --w: 24px;
-  margin: 0 3px 3px var(--adj, 0);
-}
 
 .card .face {
   height: 100%;

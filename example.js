@@ -12,9 +12,13 @@ export function showExampleGame() {
 
   const roads = {
     orange: [
-      [33, 27], [27, 21], [21, 20], [20, 14], [14, 13]
+      [33, 27], [27, 21], [21, 20], [20, 14],
+      [14, 13],
     ],
-    blue: [[31, 37], [37, 43], [24, 18], [18, 12]],
+    blue: [
+      [31, 37], [37, 43], [24, 18], [18, 12],
+      [24, 30], [30, 31],
+    ],
     white: [[3, 8], [8, 14], [15, 9], [9, 8]],
     red: [[10, 5], [5, 4], [40, 34], [34, 28]],
   };
@@ -102,7 +106,7 @@ export function showExampleGame() {
   const remainingD = ['knight', 'vp-chapel'];
 
   awardBadge('orange', 'largest-army');
-  awardBadge('orange', 'longest-road');
+  awardBadge('blue', 'longest-road');
 
   const names = {
     orange: 'Graham',

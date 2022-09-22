@@ -6,8 +6,7 @@
     --color-bg: #4c4e51;
   }
   .board,
-  .hand,
-  .inventory {
+  .side-zone {
     filter: brightness(75%);
   }
 }
@@ -23,7 +22,11 @@ body {
   overscroll-behavior: none;
   -webkit-overscroll-behavior: none;
   user-select: none;
-  font: normal 24px Tahoma;
+  font: normal 20px Tahoma;
+}
+
+.side-zone {
+  z-index: 1;
 }
 
 .circle {

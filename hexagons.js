@@ -33,7 +33,7 @@ function makePlayerArea(i, color) {
 }
 
 export function showPlayerName(color, playerName) {
-  const pn = qs(`.player-area.${color} .player-name`);
+  const pn = qs(`.player-area.${color} .username`);
   pn.innerHTML = playerName;
 }
 
@@ -134,7 +134,7 @@ function adjustCards(kind) {
     const limit = kind === 'resource' ? 10 :
         kind === 'development' ? 9 : 6;
     const adj = n <= limit ? 0 :
-        - Math.ceil(27 * (n - limit) / (n - u));
+        - Math.ceil(26 * (n - limit) / (n - u));
     for (const cards of cardsByType) {
       for (const [j, card] of cards.entries()) {
         card.style = `--adj: ${j ? adj : 0}px`;
@@ -190,3 +190,12 @@ showExampleGame();
 adjustCards('resource');
 adjustCards('development');
 adjustCards('played');
+
+// setInterval(() => {
+//   // gainCard('orange', 'resource', draw(resources));
+//   // gainCard('orange', 'development', 'knight');
+//   // gainCard('orange', 'played', 'knight');
+//   // adjustCards('resource');
+//   // adjustCards('development');
+//   // adjustCards('played');
+// }, 2000);
