@@ -1,7 +1,7 @@
 import {qs} from './utility.js';
 import {
-  w, sites, centers, hexSites, frameVertices, coast,
-  convertCoordinates,
+  w, sites, centers, hexSites, edges, 
+  frameVertices, coast, convertCoordinates,
 } from './geometry.js';
 
 export function renderBoard(board) {
@@ -88,6 +88,37 @@ export function renderBoard(board) {
     e.classList.add('port', type);
     e.setAttribute('points', pointsArr.join());
     svg.append(e);
+  }
+  
+  // Invisible roads as pointer targets
+  for (const [i, sArr] of edges.entries()) {
+    const [s0, s1] = sArr.map(s => sites[s]);
+    const [l, t] = convertCoordinates(
+      [0, 1].map(u => (s0[u] + s1[u]) / 2)
+    );
+    const a = Math.sign(
+      (s0[0] - s1[0]) * (s0[1] - s1[1])
+    );
+    const e = document.createElement('div');
+    e.classList.add(
+      'piece', 'road', 'invisible', 'clickable', 
+      `edge-${i}`
+    );
+    const style = `--l: ${l}; --t: ${t}; --a: ${a};`;
+    e.setAttribute('style', style);
+    qs('.on-board').append(e);
+  }
+  
+  // Circles on sites as pointer targets
+  for (const [i, s] of sites.entries()) {
+    const [l, t] = convertCoordinates(s);
+    const e = document.createElement('div');
+    e.classList.add(
+      'site', 'circle', 'clickable',
+      `site-${i}`
+    );
+    e.setAttribute('style', `--l: ${l}; --t: ${t};`);
+    qs('.on-board').append(e);
   }
   
 }

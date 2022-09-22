@@ -19,6 +19,22 @@ export const sites = [];
   }
 }
 
+export const neighbors = [];
+for (const [i, [xi, yi]] of sites.entries()) {
+  neighbors[i] = [];
+  for (const [j, [xj, yj]] of sites.entries()) {
+    if (i === j) continue;
+    const dx = Math.abs(xi - xj);
+    const dy = Math.abs(yi - yj);
+    if (dx <= 1 && dy <= 2) neighbors[i].push(j);
+  }
+}
+
+export const edges = [];
+for (const [i, nbs] of neighbors.entries()) {
+  for (const j of nbs) if (i < j) edges.push([i, j]);
+}
+
 export const centers = [];
 {
   const abbr = {};

@@ -18,7 +18,17 @@
   box-sizing: border-box;
   border: solid 1.5px #000;
   transform: rotate(calc(-60deg * var(--a)));
-  z-index: 0;
+}
+.road.invisible {
+  --h: 66px;
+  --w: 24px;
+  background: none;
+  border: none;
+}
+.road.invisible:hover {
+  background: #0006;
+  border-radius: 12px;
+  z-index: 2;
 }
 .piece:not(.road) {
   z-index: 1;
@@ -38,4 +48,13 @@
   stroke: #000;
   stroke-width: 0.1875;
   fill: var(--color-player);
+}
+
+.site {
+  --h: 48px;
+  --w: 48px;
+/*  pointer-events: auto;*/
+}
+.site:hover {
+  background: #0006;
 }

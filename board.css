@@ -1,4 +1,5 @@
 .board {
+  z-index: 1;
   position: relative;
   --oT: 300px;
   --oL: calc(var(--oT) * 1.1547); /* 2/√3 */
@@ -27,6 +28,8 @@
   width: var(--w);
   top: calc(var(--t) - var(--h) / 2);
   left: calc(var(--l) - var(--w) / 2);
+}
+.on-board > :not(.clickable) {
   pointer-events: none;
 }
 

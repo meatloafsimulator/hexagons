@@ -49,6 +49,8 @@ function moveRobber(hex) {
 export function placeHouse(color, type, site) {
   const siteClassString = `site-${site}`;
   qs(`.piece.${siteClassString}`)?.remove();
+  const siteElement = qs(`.site.${siteClassString}`);
+  siteElement.classList.remove('clickable');
   const [l, t] = convertCoordinates(sites[site]);
   const e = fromTemplate(type);
   e.classList.add(color, siteClassString);
@@ -61,19 +63,25 @@ export function placeHouse(color, type, site) {
   qs('.on-board').append(e);
 }
 
-export function placeRoad(color, site0, site1) {
-  const [s0, s1] = [site0, site1].map(s => sites[s]);
-  const center = [0, 1].map(i => (s0[i] + s1[i]) / 2);
-  const [l, t] = convertCoordinates(center);
-  const a = Math.sign(
-    (s0[0] - s1[0]) * (s0[1] - s1[1])
-  );
-  const e = document.createElement('div');
-  e.classList.add('road', 'piece', color);
-  const style = `--l: ${l}; --t: ${t}; --a: ${a};`;
-  e.setAttribute('style', style);
+// export function placeRoad(color, site0, site1) {
+//   const [s0, s1] = [site0, site1].map(s => sites[s]);
+//   const center = [0, 1].map(i => (s0[i] + s1[i]) / 2);
+//   const [l, t] = convertCoordinates(center);
+//   const a = Math.sign(
+//     (s0[0] - s1[0]) * (s0[1] - s1[1])
+//   );
+//   const e = document.createElement('div');
+//   e.classList.add('road', 'piece', color);
+//   const style = `--l: ${l}; --t: ${t}; --a: ${a};`;
+//   e.setAttribute('style', style);
+//   qs(`.player-area.${color} .road`).remove();
+//   qs('.on-board').append(e);
+// }
+export function placeRoad(color, edge) {
   qs(`.player-area.${color} .road`).remove();
-  qs('.on-board').append(e);
+  const e = qs(`.road.edge-${edge}`);
+  e.classList.remove('invisible', 'clickable');
+  e.classList.add(color);
 }
 
 function stockHouse(color, type, flipped) {
@@ -150,20 +158,7 @@ export function awardBadge(color, type) {
   badge.classList.add('awarded');
 }
 
-
-
-const neighbors = [];
-for (let i = 0; i < sites.length; i++) {
-  neighbors[i] = [];
-  for (let j = 0; j < sites.length; j++ ) {
-    if (i === j) continue;
-    const dx = Math.abs(sites[i][0] - sites[j][0]);
-    const dy = Math.abs(sites[i][1] - sites[j][1]);
-    if (dx <= 1 && dy <= 2) neighbors[i].push(j);
-  }
-}
-
-
+// Game initialization starts here
 
 const board = makeBoard(1);
 renderBoard(board);

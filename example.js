@@ -10,21 +10,27 @@ export function showExampleGame() {
     orange: true,
   };
 
+  // const roads = {
+  //   orange: [
+  //     [33, 27], [27, 21], [21, 20], [20, 14],
+  //     [14, 13],
+  //   ],
+  //   blue: [
+  //     [31, 37], [37, 43], [24, 18], [18, 12],
+  //     [24, 30], [30, 31],
+  //   ],
+  //   white: [[3, 8], [8, 14], [15, 9], [9, 8]],
+  //   red: [[10, 5], [5, 4], [40, 34], [34, 28]],
+  // };
   const roads = {
-    orange: [
-      [33, 27], [27, 21], [21, 20], [20, 14],
-      [14, 13],
-    ],
-    blue: [
-      [31, 37], [37, 43], [24, 18], [18, 12],
-      [24, 30], [30, 31],
-    ],
-    white: [[3, 8], [8, 14], [15, 9], [9, 8]],
-    red: [[10, 5], [5, 4], [40, 34], [34, 28]],
-  };
+    orange: [19, 21, 29, 31, 40],
+    blue: [18, 27, 35, 43, 45, 54],
+    white: [5, 12, 13, 14],
+    red: [6, 8, 41, 50],
+  }
   for (const player in roads) {
-    for (const road of roads[player]) {
-      placeRoad(player, ...road);
+    for (const edge of roads[player]) {
+      placeRoad(player, edge);
     }
   }
 
