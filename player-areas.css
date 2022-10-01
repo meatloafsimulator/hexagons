@@ -1,11 +1,12 @@
 .player-area {
-  height: 300px;
+  height: 260px;
   width:  300px;
   margin: 0 -150px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: start;
+  align-items: start;
 }
 .player-area.right {
   align-items: end;
@@ -20,22 +21,20 @@
 }
 
 .player-area .username {
-  margin: 3px 0;
+  --h: 40px;
+  height: var(--h);
+  line-height: var(--h);
+}
+.player-area.left .username.on-turn::after {
+  margin-left: 5px;
+  content: "⇦";
+}
+.player-area.right .username.on-turn::before {
+  margin-right: 5px;
+  content: "⇨";
 }
 
-.player-area .hand {
-  height: 40px;
-}
-.player-area.bottom .hand {
-  align-items: end;
-}
-.player-area .card {
-  --w: 24px;
-  margin: 0 2px 0 var(--adj, 0);
-}
-.player-area.right .card:last-child {
-  margin-right: 0;
-}
+/* For hands and cards, see cards.css */
 
 .houses {
   align-items: end;
@@ -85,9 +84,11 @@
   height: 30px;
   width: 72px;
   margin: 3px 0;
-  border: solid #f2a900 1px;
-  color: #f2a900;
-  text-transform: uppercase;
+  border: solid var(--color-gold) 1px;
+  padding: 5px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
   --sep: 6px;
 }
 .player-area.left .badge {
@@ -104,4 +105,7 @@
 }
 .longest-road {
   background: #343741;
+}
+.badge img {
+  width: 18px;
 }

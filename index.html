@@ -7,13 +7,47 @@
 <link rel="stylesheet" href="cards.css">
 <link rel="stylesheet" href="pieces.css">
 <link rel="stylesheet" href="player-areas.css">
+<link rel="stylesheet" href="medians.css">
 <script type="module" src="hexagons.js"></script>
-<div class="side-zone left"></div>
+<div class="side-zone left">
+  <div class="median">
+    <button type="button" class="primary centered">
+      <svg viewBox="0 0 24 24">
+        <path d="M17 8l4 4l-4 4m4 -4H3" />
+      </svg>
+    </button>
+    <!-- <button type="button" class="primary centered">
+      My Turn
+    </button> -->
+  </div>
+</div>
 <div class="board">
   <svg></svg>
   <div class="on-board"></div>
 </div>
-<div class="side-zone right"></div>
+<div class="side-zone right">
+  <div class="median">
+    <button type="button" class="options centered">
+      <svg viewBox="0 0 24 24" stroke-width="1.5">
+        <circle cx="4" cy="12" r="0.75" />
+        <circle cx="12" cy="12" r="0.75" />
+        <circle cx="20" cy="12" r="0.75" />
+      </svg>
+    </button>
+  </div>
+</div>
+<div class="card-viewer fullscreen-overlay centered">
+  <div class="hand"></div>
+  <div class="zoomed"></div>
+  <div>
+    <button type="button" class="primary white">
+      Play This Card
+    </button>
+    <button type="button" class="secondary">
+      Return to Game
+    </button>
+  </div>
+</div>
 <template class="settlement">
   <svg class="settlement piece" viewbox="0 0 6 6">
     <polygon points="3 1 1 3 1 5 5 5 5 3"></polygon>
@@ -26,6 +60,11 @@
     ></polygon>
   </svg>
 </template>
+<template class="robber">
+  <svg class="robber" viewbox="0 0 2 2">
+    <line x1="0" y1="1" x2="2" y2="1"/>
+  </svg>
+</template>
 <template class="player-area">
   <div class="player-area">
     <div class="hand resource"></div>
@@ -35,11 +74,15 @@
     <div class="username"></div>
     <div class="hand played"></div>
     <div class="badges">
-      <div class="badge largest-army centered">
-        army
+      <div class="badge largest-army">
+        <img src="img/badge/star.svg">
+        <img src="img/badge/army.svg">
+        <img src="img/badge/star.svg">
       </div>
-      <div class="badge longest-road centered">
-        road
+      <div class="badge longest-road">
+        <img src="img/badge/star.svg">
+        <img src="img/badge/road.svg">
+        <img src="img/badge/star.svg">
       </div>
     </div>
   </div>
@@ -55,13 +98,56 @@
 <template class="development">
   <div class="card development">
     <div class="face front centered">
+      <div class="card-title"></div>
       <div class="icon centered"><img></div>
+      <div class="card-text"></div>
     </div>
     <div class="face back"></div>
   </div>
 </template>
-<template class="robber">
-  <svg class="robber" viewbox="0 0 2 2">
-    <line x1="0" y1="1" x2="2" y2="1"/>
-  </svg>
+<template class="development-title knight">
+  Knight
+</template>
+<template class="development-text knight">
+  Move the robber. Steal a resource card
+  from the owner of an adjacent city or settlement.
+</template>
+<template class="development-title monopoly">
+  Monopoly
+</template>
+<template class="development-text monopoly">
+  Choose a resource type. All players must
+  give you all of their cards of that resource type.
+</template>
+<template class="development-title road-building">
+  Road Building
+</template>
+<template class="development-text road-building">
+  Place two new roads for free
+  (in locations where you can build roads).
+</template>
+<template class="development-title year-of-plenty">
+  Year of Plenty
+</template>
+<template class="development-text year-of-plenty">
+  Take any two resource cards from the bank.
+  (of the same type or different types).
+</template>
+<template class="development-title vp-chapel">
+  Chapel
+</template>
+<template class="development-title vp-library">
+  Library
+</template>
+<template class="development-title vp-market">
+  Market
+</template>
+<template class="development-title vp-palace">
+  Palace
+</template>
+<template class="development-title vp-university">
+  University
+</template>
+<template class="development-text vp">
+  One Victory Point!
 </template>

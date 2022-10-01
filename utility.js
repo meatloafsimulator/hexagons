@@ -22,6 +22,24 @@ export function aelo(x, type, fn) {
   element.addEventListener(type, f, {once: true});
 }
 
+export function positionInDocument(x) {
+  const element = typeof x === 'object' ? x : qs(x);
+  const bcr = element.getBoundingClientRect();
+  const pos = {};
+  for (const prop in bcr) pos[prop] = bcr[prop];
+  for (const prop of ['left', 'right', 'x']) {
+    pos[prop] += document.documentElement.scrollLeft;
+  }
+  for (const prop of ['top', 'bottom', 'y']) {
+    pos[prop] += document.documentElement.scrollTop;
+  }
+  pos.center = {
+    x: (pos.left + pos.right) / 2,
+    y: (pos.top + pos.bottom) / 2,
+  };
+  return pos;
+}
+
 export function sum(arr) {
   return arr.reduce((a, e) => a + e);
 }

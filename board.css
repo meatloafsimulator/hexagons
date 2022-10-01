@@ -1,5 +1,5 @@
 .board {
-  z-index: 1;
+  z-index: 0;
   position: relative;
   --oT: 300px;
   --oL: calc(var(--oT) * 1.1547); /* 2/√3 */
@@ -41,6 +41,7 @@
   text-align: center;
   font-size: 24px;
   background: var(--color-sand);
+  color: #000;
 }
 .chit.robber {
   outline: solid 4px #000;

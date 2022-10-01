@@ -1,6 +1,6 @@
 .card {
   box-sizing: border-box;
-  min-width: var(--w);
+  width: var(--w);
   height: calc(var(--w) * 1.5);
   --b-w: calc(var(--w) / 24);
   --b-r: calc(var(--w) / 12);
@@ -8,11 +8,13 @@
   border: solid #fff var(--b-w);
   border-radius: var(--b-r);
   background: #fff;
+  color: #000;
 }
 
 .card .face {
   height: 100%;
   width: 100%;
+  flex-direction: column;
 }
 
 .card .back {
@@ -23,6 +25,11 @@
 }
 .card.unknown .back {
   display: block;
+}
+
+.card-name,
+.card-text {
+  display: none;
 }
 
 .card.resource .face {
@@ -42,7 +49,7 @@
   --color-resource: #002657;
 }
 
-.card.development .front .icon {
+.card.development .front {
   box-sizing: border-box;
   height: 100%; width: 100%;
   background: #ffc;
@@ -65,4 +72,69 @@
 .card.development .back {
   background: #ffc;
   border-radius: var(--b-r-inner);
+}
+
+.player-area .hand {
+  height: 40px;
+}
+.player-area.bottom .hand {
+  align-items: end;
+}
+.player-area .card {
+  --w: 24px;
+  margin: 0 2px 0 var(--adj, 0);
+}
+.player-area.right .card:last-child {
+  margin-right: 0;
+}
+
+.card-viewer {
+  flex-direction: column;
+}
+.card-viewer .hand {
+  width: 1000px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.card-viewer .hand .card {
+  --w: 48px;
+  margin: 6px;
+}
+.card-viewer .hand .card.selected {
+  outline: solid 6px var(--color-gold);
+}
+.card-viewer .zoomed .card {
+  --w: 324px;
+  height: var(--w);
+  width: calc(var(--w) * 1.5);
+  margin: 12px;
+}
+.card-viewer .zoomed .face {
+  justify-content: space-evenly;
+}
+.card-viewer .zoomed .card-title {
+  display: block;
+  font-size: 30px;
+  font-weight: bold;
+}
+.card-viewer .zoomed .icon img {
+  width: 144px;
+}
+.card-viewer .zoomed .card-text {
+  display: block;
+  margin: 0 12px;
+  text-align: center;
+}
+.card-viewer .zoomed .vp .card-text {
+  background: var(--color-gold);
+  padding: 6px 12px;
+  border: solid 6px #000;
+  border-radius: 6px;
+  font-weight: bold;
+}
+.card-viewer button {
+  width: 228px;
+  margin: 12px;
 }

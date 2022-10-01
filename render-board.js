@@ -1,8 +1,9 @@
-import {qs} from './utility.js';
+import {qs, ael} from './utility.js';
 import {
   w, sites, centers, hexSites, edges, 
   frameVertices, coast, convertCoordinates,
 } from './geometry.js';
+import {clickSite, clickEdge} from './hexagons.js';
 
 export function renderBoard(board) {
 
@@ -101,11 +102,11 @@ export function renderBoard(board) {
     );
     const e = document.createElement('div');
     e.classList.add(
-      'piece', 'road', 'invisible', 'clickable', 
-      `edge-${i}`
+      'piece', 'road', 'invisible', `edge-${i}`
     );
     const style = `--l: ${l}; --t: ${t}; --a: ${a};`;
     e.setAttribute('style', style);
+    ael(e, 'click', () => clickEdge(i));
     qs('.on-board').append(e);
   }
   
@@ -113,11 +114,9 @@ export function renderBoard(board) {
   for (const [i, s] of sites.entries()) {
     const [l, t] = convertCoordinates(s);
     const e = document.createElement('div');
-    e.classList.add(
-      'site', 'circle', 'clickable',
-      `site-${i}`
-    );
+    e.classList.add('site', 'circle', `site-${i}`);
     e.setAttribute('style', `--l: ${l}; --t: ${t};`);
+    ael(e, 'click', () => clickSite(i));
     qs('.on-board').append(e);
   }
   

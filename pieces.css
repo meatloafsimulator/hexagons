@@ -1,14 +1,18 @@
 .orange {
   --color-player: #fa4616;
+  --color-player-contrast: #000;
 }
 .blue {
   --color-player: #0021a5;
+  --color-player-contrast: #fff;
 }
 .white {
   --color-player: #fff;
+  --color-player-contrast: #000;
 }
 .red {
   --color-player: #d32737;
+  --color-player-contrast: #fff;
 }
 
 .road {
@@ -45,15 +49,14 @@
   transform: scaleX(-1);
 }
 .piece polygon {
+  fill: var(--color-player);
   stroke: #000;
   stroke-width: 0.1875;
-  fill: var(--color-player);
 }
 
 .site {
   --h: 48px;
   --w: 48px;
-/*  pointer-events: auto;*/
 }
 .site:hover {
   background: #0006;

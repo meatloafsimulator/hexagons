@@ -1,12 +1,19 @@
 :root {
   --color-bg: #97999c;
+  --color-fg: #000;
+  --color-mg: #babbbd;
+  --color-blur: #5555;
+  --color-gold: #f2a900;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --color-bg: #4c4e51;
+    --color-fg: #fff;
+    --color-mg: var(--color-bg);
   }
   .board,
-  .side-zone {
+  .side-zone,
+  .card-viewer {
     filter: brightness(75%);
   }
 }
@@ -15,6 +22,7 @@ body {
   height: 100vh;
   margin: 0;
   background: var(--color-bg);
+  color: var(--color-fg);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -23,6 +31,24 @@ body {
   -webkit-overscroll-behavior: none;
   user-select: none;
   font: normal 20px Tahoma;
+}
+
+button {
+  height: 60px;
+  padding: 0;
+  border-radius: 30px;
+  border: solid 1.5px #000;
+  font: normal 25px Tahoma;
+}
+button.primary {
+/*  background: var(--color-player);*/
+/*  color: var(--color-player-contrast);*/
+  background: var(--color-gold);
+  color: #000;
+}
+button.secondary {
+  background: var(--color-mg);
+  color: var(--color-fg);
 }
 
 .circle {
@@ -37,6 +63,20 @@ body {
 
 .clickable {
   pointer-events: auto;
+}
+
+.side-zone {
+  z-index: 1;
+}
+
+.fullscreen-overlay {
+  display: none;
+  position: fixed;
+  z-index: 3;
+  height: 100vh;
+  width:  100vw;
+  background: var(--color-blur);
+  backdrop-filter: blur(5px);
 }
 
 .brick {
