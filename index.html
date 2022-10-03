@@ -6,19 +6,13 @@
 <link rel="stylesheet" href="board.css">
 <link rel="stylesheet" href="cards.css">
 <link rel="stylesheet" href="pieces.css">
-<link rel="stylesheet" href="player-areas.css">
-<link rel="stylesheet" href="medians.css">
+<link rel="stylesheet" href="side-zones.css">
 <script type="module" src="hexagons.js"></script>
 <div class="side-zone left">
   <div class="median">
-    <button type="button" class="primary centered">
-      <svg viewBox="0 0 24 24">
-        <path d="M17 8l4 4l-4 4m4 -4H3" />
-      </svg>
-    </button>
-    <!-- <button type="button" class="primary centered">
+    <button type="button" class="primary my-turn">
       My Turn
-    </button> -->
+    </button>
   </div>
 </div>
 <div class="board">
@@ -27,26 +21,27 @@
 </div>
 <div class="side-zone right">
   <div class="median">
-    <button type="button" class="options centered">
-      <svg viewBox="0 0 24 24" stroke-width="1.5">
-        <circle cx="4" cy="12" r="0.75" />
-        <circle cx="12" cy="12" r="0.75" />
-        <circle cx="20" cy="12" r="0.75" />
-      </svg>
+    <button type="button" class="options">
+      Options
     </button>
   </div>
 </div>
 <div class="card-viewer fullscreen-overlay centered">
-  <div class="hand"></div>
+  <div class="hand centered"></div>
   <div class="zoomed"></div>
   <div>
-    <button type="button" class="primary white">
+    <button type="button" class="primary play">
       Play This Card
     </button>
-    <button type="button" class="secondary">
+    <button type="button" class="close">
       Return to Game
     </button>
   </div>
+</div>
+<div class="badge-viewer fullscreen-overlay centered">
+  <button type="button" class="close">
+    Return to Game
+  </button>
 </div>
 <template class="settlement">
   <svg class="settlement piece" viewbox="0 0 6 6">
@@ -74,15 +69,29 @@
     <div class="username"></div>
     <div class="hand played"></div>
     <div class="badges">
-      <div class="badge largest-army">
-        <img src="img/badge/star.svg">
-        <img src="img/badge/army.svg">
-        <img src="img/badge/star.svg">
+      <div class="badge centered largest-army">
+        <div class="badge-title"></div>
+        <div class="icon">
+          <img src="img/badge/star.svg">
+          <img src="img/badge/army.svg">
+          <img src="img/badge/star.svg">
+        </div>
+        <div class="badge-vp">
+          Two Victory Points!
+        </div>
+        <div class="badge-text"></div>
       </div>
-      <div class="badge longest-road">
-        <img src="img/badge/star.svg">
-        <img src="img/badge/road.svg">
-        <img src="img/badge/star.svg">
+      <div class="badge centered longest-road">
+        <div class="badge-title"></div>
+        <div class="icon">
+          <img src="img/badge/star.svg">
+          <img src="img/badge/road.svg">
+          <img src="img/badge/star.svg">
+        </div>
+        <div class="badge-vp">
+          Two Victory Points!
+        </div>
+        <div class="badge-text"></div>
       </div>
     </div>
   </div>
@@ -130,7 +139,7 @@
   Year of Plenty
 </template>
 <template class="development-text year-of-plenty">
-  Take any two resource cards from the bank.
+  Take any two resource cards from the bank
   (of the same type or different types).
 </template>
 <template class="development-title vp-chapel">
@@ -150,4 +159,18 @@
 </template>
 <template class="development-text vp">
   One Victory Point!
+</template>
+<template class="badge-title largest-army">
+  Largest Army
+</template>
+<template class="badge-text largest-army">
+  This badge goes to the player who has played
+  the most Knight cards (minimum of three).
+</template>
+<template class="badge-title longest-road">
+  Longest Road
+</template>
+<template class="badge-text longest-road">
+  This badge goes to the player with the longest
+  unbroken chain of roads (minimum of five).
 </template>

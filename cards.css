@@ -91,19 +91,15 @@
 .card-viewer {
   flex-direction: column;
 }
-.card-viewer .hand {
-  width: 1000px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
 .card-viewer .hand .card {
   --w: 48px;
   margin: 6px;
 }
 .card-viewer .hand .card.selected {
   outline: solid 6px var(--color-gold);
+}
+.card-viewer .zoomed {
+  height: 348px;
 }
 .card-viewer .zoomed .card {
   --w: 324px;
@@ -137,4 +133,7 @@
 .card-viewer button {
   width: 228px;
   margin: 12px;
+}
+.card-viewer button.play {
+  display: none;
 }

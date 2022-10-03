@@ -15,3 +15,6 @@ export const developmentCardCount = {
   'vp-palace': 1,
   'vp-university': 1,  
 };
+export const config = {
+  delay: 103,
+};

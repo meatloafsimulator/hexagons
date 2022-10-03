@@ -2,7 +2,7 @@ import {
   qs, qsa, ael, shuffle, draw, sum, seq,
 } from './utility.js';
 import {
-  resources, pieceCount, developmentCardCount,
+  resources, pieceCount, developmentCardCount, config,
 } from './constants.js';
 import {
   w, sites, edges, neighbors, centers, hexSites, 
@@ -244,25 +244,26 @@ function showCardViewer(card) {
     cvHand.append(cNew);
   }
   qs('.zoomed', cv).append(enlargeCard(card));
-  cv.style.display = 'flex';
+  setTimeout(
+    () => {cv.style.display = 'flex';}, config.delay
+  );
 }
-
 function hideCardViewer() {
   const cv = qs('.card-viewer');
+  cv.style.display = 'none';
   qs('.hand', cv).replaceChildren();
   qs('.zoomed', cv).replaceChildren();
-  cv.style.display = 'none';
 }
-
 function swapCardViewer(card) {
   const cv = qs('.card-viewer');
   qs('.selected', cv).classList.remove('selected');
   card.classList.add('selected');
-  qs('.zoomed', cv).replaceChildren(
-    enlargeCard(card)
+  const z = qs('.zoomed', cv);
+  const cNew = enlargeCard(card);
+  setTimeout(
+    () => z.replaceChildren(cNew), config.delay
   );
 }
-
 function enlargeCard(card) {
   const bigCard = card.cloneNode(true);
   let cardName = '';
@@ -286,6 +287,33 @@ function enlargeCard(card) {
     qs('.card-title', bigCard).innerHTML = cardTitle;
   }
   return bigCard;
+}
+
+function showBadgeViewer(badge) {
+  const bv = qs('.badge-viewer');
+  bv.prepend(enlargeBadge(badge));
+  setTimeout(
+    () => {bv.style.display = 'flex';}, config.delay
+  );
+}
+function hideBadgeViewer(badge) {
+  const bv = qs('.badge-viewer');
+  bv.style.display = 'none';
+  qs('.badge', bv).remove();
+}
+function enlargeBadge(badge) {
+  const bigBadge = badge.cloneNode(true);
+  const [la, lr] = ['largest-army', 'longest-road'];
+  const bKey = badge.classList.contains(la) ? la : lr;
+  const badgeTitle = fromTemplate(
+    `badge-title.${bKey}`, true
+  );
+  const badgeText = fromTemplate(
+    `badge-text.${bKey}`, true
+  );
+  qs('.badge-title', bigBadge).innerHTML = badgeTitle;
+  qs('.badge-text', bigBadge).innerHTML = badgeText;
+  return bigBadge;
 }
 
 // Game initialization starts here
@@ -329,10 +357,11 @@ for (const [i, color] of gso.order.entries()) {
 }
 
 // Attach event listeners
-ael(
-  '.card-viewer button.secondary', 
-  'click', hideCardViewer
-);
+ael('.card-viewer .close', 'click', hideCardViewer);
+ael('.badge-viewer .close', 'click', hideBadgeViewer);
+for (const b of qsa('.player-area .badge')) {
+  ael(b, 'click', () => showBadgeViewer(b));
+}
 
 // Ensure that no template elements appear
 for (const t of qsa('template')) {

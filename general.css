@@ -1,7 +1,6 @@
 :root {
   --color-bg: #97999c;
   --color-fg: #000;
-  --color-mg: #babbbd;
   --color-blur: #5555;
   --color-gold: #f2a900;
 }
@@ -9,7 +8,6 @@
   :root {
     --color-bg: #4c4e51;
     --color-fg: #fff;
-    --color-mg: var(--color-bg);
   }
   .board,
   .side-zone,
@@ -39,16 +37,12 @@ button {
   border-radius: 30px;
   border: solid 1.5px #000;
   font: normal 25px Tahoma;
-}
-button.primary {
-/*  background: var(--color-player);*/
-/*  color: var(--color-player-contrast);*/
-  background: var(--color-gold);
+  background: #c7c9c8;
+/*  background: #d8d4d7;*/
   color: #000;
 }
-button.secondary {
-  background: var(--color-mg);
-  color: var(--color-fg);
+button.primary {
+  background: var(--color-gold);
 }
 
 .circle {
@@ -65,10 +59,6 @@ button.secondary {
   pointer-events: auto;
 }
 
-.side-zone {
-  z-index: 1;
-}
-
 .fullscreen-overlay {
   display: none;
   position: fixed;
@@ -80,17 +70,22 @@ button.secondary {
 }
 
 .brick {
-  --color-resource: #930;
+/*  --color-resource: #930;*/
+  --color-resource: #821;
 }
 .wood {
-  --color-resource: #063;
+/*  --color-resource: #063;*/
+  --color-resource: #153;
 }
 .sheep {
-  --color-resource: #6c0;
+/*  --color-resource: #6c0;*/
+  --color-resource: #5a1;
 }
 .wheat {
-  --color-resource: #f90;
+/*  --color-resource: #f90;*/
+  --color-resource: #c91;
 }
 .rock {
-  --color-resource: #666;
+/*  --color-resource: #666;*/
+  --color-resource: #556;
 }
