@@ -2,7 +2,8 @@ import {
   qs, qsa, ael, shuffle, draw, sum, seq,
 } from './utility.js';
 import {
-  resources, pieceCount, developmentCardCount, config,
+  resources, cost, pieceCount, developmentCount,
+  config,
 } from './constants.js';
 import {
   w, sites, edges, neighbors, centers, hexSites, 
@@ -267,7 +268,7 @@ function swapCardViewer(card) {
 function enlargeCard(card) {
   const bigCard = card.cloneNode(true);
   let cardName = '';
-  const names = Object.keys(developmentCardCount);
+  const names = Object.keys(developmentCount);
   for (const cl of card.classList) {
     if (names.includes(cl)) cardName = cl;
   }
@@ -316,6 +317,11 @@ function enlargeBadge(badge) {
   return bigBadge;
 }
 
+function showTurnMenu() {
+  const tm = qs('.turn-menu');
+  tm.style.display = 'flex';
+}
+
 // Game initialization starts here
 
 // Make and render board
@@ -356,12 +362,24 @@ for (const [i, color] of gso.order.entries()) {
   showPlayerName(color, 'Anonymous');
 }
 
+// Add costs to turn menu
+for (const [x, xCost] of Object.entries(cost)) {
+  const costDiv = qs(`.buy-${x} .cost`);
+  for (const [r, n] of Object.entries(xCost)) {
+    console.log(`${x} requires ${n} of ${r}`);
+    for (let i = 0; i < n; i++) {
+      costDiv.append(makeCard('resource', r));
+    }
+  }
+}
+
 // Attach event listeners
 ael('.card-viewer .close', 'click', hideCardViewer);
 ael('.badge-viewer .close', 'click', hideBadgeViewer);
 for (const b of qsa('.player-area .badge')) {
   ael(b, 'click', () => showBadgeViewer(b));
 }
+ael('.my-turn', 'click', showTurnMenu);
 
 // Ensure that no template elements appear
 for (const t of qsa('template')) {

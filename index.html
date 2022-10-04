@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="cards.css">
 <link rel="stylesheet" href="pieces.css">
 <link rel="stylesheet" href="side-zones.css">
+<link rel="stylesheet" href="turn-menu.css">
 <script type="module" src="hexagons.js"></script>
 <div class="side-zone left">
   <div class="median">
@@ -42,6 +43,28 @@
   <button type="button" class="close">
     Return to Game
   </button>
+</div>
+<div class="turn-menu fullscreen-overlay centered">
+  <div class="section-header">Buy</div>
+  <div class="buy-options centered">
+    <div class="buy-road">
+      <button type="button">Road</button>
+      <div class="cost centered"></div>
+    </div>
+    <div class="buy-settlement">
+      <button type="button">Settlement</button>
+      <div class="cost centered"></div>
+    </div>
+    <div class="buy-city">
+      <button type="button">City</button>
+      <div class="cost centered"></div>
+    </div>
+    <div class="buy-development">
+      <button type="button">Development Card</button>
+      <div class="cost centered"></div>
+    </div>
+  </div>
+  <div></div>
 </div>
 <template class="settlement">
   <svg class="settlement piece" viewbox="0 0 6 6">

@@ -1,17 +1,18 @@
 :root {
   --color-bg: #97999c;
   --color-fg: #000;
-  --color-blur: #5555;
+  --color-blur: #aaaa;
   --color-gold: #f2a900;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --color-bg: #4c4e51;
     --color-fg: #fff;
+    --color-blur: #555a;
   }
   .board,
   .side-zone,
-  .card-viewer {
+  .fullscreen-overlay {
     filter: brightness(75%);
   }
 }
@@ -66,7 +67,7 @@ button.primary {
   height: 100vh;
   width:  100vw;
   background: var(--color-blur);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(10px);
 }
 
 .brick {

@@ -1,0 +1,24 @@
+.turn-menu {
+  flex-direction: column;
+}
+.turn-menu button {
+  font: inherit;
+  height: 48px;
+  width: 220px;
+}
+.turn-menu .section-header {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 18px;
+}
+.turn-menu .buy-options {
+  justify-content: space-between;
+  width: 1000px;
+}
+.cost {
+  margin: 4px;
+}
+.cost .card {
+  --w: 24px;
+  margin: 2px;
+}
