@@ -12,7 +12,7 @@
   }
   .board,
   .side-zone,
-  .fullscreen-overlay {
+  .overlay {
     filter: brightness(75%);
   }
 }
@@ -60,7 +60,7 @@ button.primary {
   pointer-events: auto;
 }
 
-.fullscreen-overlay {
+.overlay {
   display: none;
   position: fixed;
   z-index: 3;

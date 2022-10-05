@@ -9,25 +9,25 @@
 <link rel="stylesheet" href="side-zones.css">
 <link rel="stylesheet" href="turn-menu.css">
 <script type="module" src="hexagons.js"></script>
-<div class="side-zone left">
-  <div class="median">
+<section class="side-zone left">
+  <section class="median">
     <button type="button" class="primary my-turn">
       My Turn
     </button>
-  </div>
-</div>
-<div class="board">
+  </section>
+</section>
+<section class="board">
   <svg></svg>
   <div class="on-board"></div>
-</div>
-<div class="side-zone right">
-  <div class="median">
+</section>
+<section class="side-zone right">
+  <section class="median">
     <button type="button" class="options">
       Options
     </button>
-  </div>
-</div>
-<div class="card-viewer fullscreen-overlay centered">
+  </section>
+</section>
+<section class="card-viewer overlay centered">
   <div class="hand centered"></div>
   <div class="zoomed"></div>
   <div>
@@ -38,13 +38,13 @@
       Return to Game
     </button>
   </div>
-</div>
-<div class="badge-viewer fullscreen-overlay centered">
+</section>
+<section class="badge-viewer overlay centered">
   <button type="button" class="close">
     Return to Game
   </button>
-</div>
-<div class="turn-menu fullscreen-overlay centered">
+</section>
+<section class="turn-menu overlay centered">
   <div class="section-header">Buy</div>
   <div class="buy-options centered">
     <div class="buy-road">
@@ -65,7 +65,7 @@
     </div>
   </div>
   <div></div>
-</div>
+</section>
 <template class="settlement">
   <svg class="settlement piece" viewbox="0 0 6 6">
     <polygon points="3 1 1 3 1 5 5 5 5 3"></polygon>
@@ -84,7 +84,7 @@
   </svg>
 </template>
 <template class="player-area">
-  <div class="player-area">
+  <section class="player-area">
     <div class="hand resource"></div>
     <div class="hand development"></div>
     <div class="houses"></div>
@@ -117,7 +117,7 @@
         <div class="badge-text"></div>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 <template class="resource">
   <div class="card resource">
