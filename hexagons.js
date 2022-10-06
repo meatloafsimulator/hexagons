@@ -3,11 +3,11 @@ import {
 } from './utility.js';
 import {
   resources, cost, pieceCount, developmentCount,
-  playerColors, config,
+  playerColors, exchangeRate, config,
 } from './constants.js';
 import {
   w, sites, edges, neighbors, centers, hexSites, 
-  frameVertices, convertCoordinates,
+  frameVertices, convertCoordinates, coast,
 } from './geometry.js';
 import {makeBoard, boardCode} from './make-board.js';
 import {renderBoard} from './render-board.js';
@@ -359,17 +359,20 @@ function showTurnMenu() {
     }
     qs(`.buy-${x} button`, tm).disabled = ! afford;
   }
-  // {
-  //   let okCard = true;
-  //   if (gso.playedDevelopmentOnTurn) okCard = false;
-  //   const h = gso.hands[color];
-  //   if (! h.development && ! h.unripe) okCard = false;
-  //   qs('.play-development').disabled = ! okCard;
-  // }
-  const oh = gso.hands[color];
+  const nCards = gso.hands[color];
   qs('.play-development').disabled =
       gso.playedDevelopmentOnTurn ||
-      ! (oh.development + oh.unripe);      
+      ! (nCards.development + nCards.unripe);
+  const portStatus = onPort(color);
+  let okTradeWithBank = false;
+  for (const [r, n] of Object.entries(rHand)) {
+    const rate = exchangeRate[
+      portStatus[r] ? 'portSpecific' :
+      portStatus.generic ? 'portGeneric' : 'general'
+    ];
+    if (n >= rate) okTradeWithBank = true;
+  }
+  qs('.trade-bank').disabled = ! okTradeWithBank;
   setTimeout(
     () => {tm.style.display = 'flex';}, config.delay
   );
@@ -384,6 +387,21 @@ function chooseDevelopment() {
   sel += ' .hand.development .card';
   const card = qs(`${sel}:not(.vp):not(.unripe)`);
   showCardViewer(card ?? qs(sel), true);
+}
+
+function onPort(color) {
+  const c = color.substring(0, 1);
+  const result = {};
+  for (const [i, port] of board.ports.entries()) {
+    if (! port) continue;
+    const coastCycle = [...coast, coast[0]];
+    const portSites = coastCycle.slice(i, i + 2);
+    for (const s of portSites) {
+      const h = gso.houses[s].toLowerCase();
+      if (h === c) result[port] = true;
+    }
+  }
+  return result;
 }
 
 // Game initialization starts here
@@ -489,3 +507,4 @@ showExampleGame();
 // nextSetupTurn();
 console.log(gso);
 console.log(gsc);
+console.log(board);

@@ -13,6 +13,9 @@ export const cost = {
   city: {wheat: 2, rock: 3},
   development: {sheep: 1, wheat: 1, rock: 1},
 };
+export const exchangeRate = {
+  portSpecific: 2, portGeneric: 3, general: 4,
+};
 export const developmentCount = {
   'knight': 14,
   'monopoly': 2,
