@@ -1,19 +1,29 @@
 .turn-menu {
   flex-direction: column;
+  justify-content: space-evenly;
+  padding-bottom: 36px;
 }
 .turn-menu button {
   font: inherit;
-  height: 48px;
-  width: 220px;
+  height: 54px;
+  width: 260px;
+  margin: 0 20px;
 }
-.turn-menu .section-header {
+.turn-menu section {
+  flex-direction: column;
+}
+.turn-menu h2 {
   font-size: 30px;
   font-weight: bold;
   margin: 18px;
 }
-.turn-menu .buy-options {
-  justify-content: space-between;
-  width: 1000px;
+
+.turn-menu .start-turn {
+  display: none;
+}
+
+.turn-menu .buy button {
+  width: 220px;
 }
 .cost {
   margin: 4px;

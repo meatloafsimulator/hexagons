@@ -3,7 +3,7 @@ import {
 } from './utility.js';
 import {
   resources, cost, pieceCount, developmentCount,
-  config,
+  playerColors, config,
 } from './constants.js';
 import {
   w, sites, edges, neighbors, centers, hexSites, 
@@ -104,11 +104,26 @@ function makeCard(kind, cardName) {
   return card;
 }
 export function gainCard(color, loc, cardName) {
-  const kind = loc === 'played' ? 'development' : loc;
+  
+  // Add card visually
+  const kind = loc === 'resource' ?
+      'resource' : 'development';
   const card = makeCard(kind, cardName);
   ael(card, 'click', () => showCardViewer(card));
-  const sel = `.player-area.${color} .hand.${loc}`;
+  if (loc === 'unripe') card.classList.add('unripe');
+  const hand = loc === 'unripe' ? 'development' : loc;
+  const sel = `.player-area.${color} .hand.${hand}`;
   qs(sel).append(card);
+  
+  // Add card in game state
+  if (loc === 'played') {
+    gso.hands[color][loc][cardName]++;
+    return;
+  }
+  gso.hands[color][loc]++;
+  if (! gso.control[color]) return;
+  gsc.hands[color][loc][cardName]++;
+  
 }
 function gainStartingHand(color, site) {
   const adjacentHexes = board.hexes.filter(
@@ -234,7 +249,7 @@ export function clickEdge(edge) {
   if (gso.setup) nextSetupTurn();
 }
 
-function showCardViewer(card) {
+function showCardViewer(card, showPlayButton) {
   const cv = qs('.card-viewer');
   const cvHand = qs('.hand', cv);
   const paHand = card.parentElement;
@@ -245,8 +260,18 @@ function showCardViewer(card) {
     cvHand.append(cNew);
   }
   qs('.zoomed', cv).append(enlargeCard(card));
+  const playButton = qs('.play', cv);
+  playButton.style.display =
+      showPlayButton ? 'inline' : 'none';
+  playButton.disabled =
+      card.classList.contains('vp') ||
+      card.classList.contains('unripe');
   setTimeout(
-    () => {cv.style.display = 'flex';}, config.delay
+    () => {
+      hideTurnMenu();
+      cv.style.display = 'flex';
+    },
+    config.delay
   );
 }
 function hideCardViewer() {
@@ -262,7 +287,13 @@ function swapCardViewer(card) {
   const z = qs('.zoomed', cv);
   const cNew = enlargeCard(card);
   setTimeout(
-    () => z.replaceChildren(cNew), config.delay
+    () => {
+      z.replaceChildren(cNew);
+      qs('.play', cv).disabled =
+          card.classList.contains('vp') ||
+          card.classList.contains('unripe');
+    },
+    config.delay
   );
 }
 function enlargeCard(card) {
@@ -319,7 +350,40 @@ function enlargeBadge(badge) {
 
 function showTurnMenu() {
   const tm = qs('.turn-menu');
-  tm.style.display = 'flex';
+  const color = gso.order[gso.turn];
+  const rHand = gsc.hands[color].resource;
+  for (const [x, xCost] of Object.entries(cost)) {
+    let afford = true;
+    for (const [r, n] of Object.entries(xCost)) {
+      if (rHand[r] < n) afford = false;
+    }
+    qs(`.buy-${x} button`, tm).disabled = ! afford;
+  }
+  // {
+  //   let okCard = true;
+  //   if (gso.playedDevelopmentOnTurn) okCard = false;
+  //   const h = gso.hands[color];
+  //   if (! h.development && ! h.unripe) okCard = false;
+  //   qs('.play-development').disabled = ! okCard;
+  // }
+  const oh = gso.hands[color];
+  qs('.play-development').disabled =
+      gso.playedDevelopmentOnTurn ||
+      ! (oh.development + oh.unripe);      
+  setTimeout(
+    () => {tm.style.display = 'flex';}, config.delay
+  );
+}
+function hideTurnMenu() {
+  qs('.turn-menu').style.display = 'none';
+}
+
+function chooseDevelopment() {
+  const color = gso.order[gso.turn];
+  let sel = `.player-area.${gso.order[gso.turn]}`;
+  sel += ' .hand.development .card';
+  const card = qs(`${sel}:not(.vp):not(.unripe)`);
+  showCardViewer(card ?? qs(sel), true);
 }
 
 // Game initialization starts here
@@ -328,29 +392,48 @@ function showTurnMenu() {
 const board = makeBoard(1);
 renderBoard(board);
 
-// Game state objects, overt (gso) and covert (gsc)
-// These will eventually also go in database
-const gso = {
-  setup: 2,
-  turn: -1,
-  houses: sites.map(s => ''),
-  roads: edges.map(e => ''),
-};
-
 const robber = draw(seq(board.hexes.length).filter(
   x => board.hexes[x] === 'desert'
 )) ?? -1;
 if (robber > -1) moveRobber(robber);
 
+// Game state objects, overt (gso) and covert (gsc)
+// These will eventually also go in database
+export const gso = {
+  setup: 2,
+  turn: -1,
+  playedDevelopmentOnTurn: false,
+  houses: sites.map(s => ''),
+  roads: edges.map(e => ''),
+  hands: {},
+};
+export const gsc = {hands: {},};
+
 // Regulate which user controls which color
 // These will eventually be user ids or something
 gso.control = {orange: true};
-// qs('button.actions').classList.add('orange');
+
+// Add hand information to game state objects
+for (const c of playerColors) {
+  const dObj = Object.fromEntries(
+    Object.keys(developmentCount).map(d => [d, 0])
+  );
+  gso.hands[c] = {
+    resource: 0, development: 0, unripe: 0,
+    played: {...dObj},
+  };
+  if (! gso.control[c]) continue;
+  const rObj = Object.fromEntries(
+    resources.map(r => [r, 0])
+  );
+  gsc.hands[c] = {
+    resource: {...rObj},
+    development: {...dObj}, unripe: {...dObj},
+  };
+}
 
 // Shuffle seating arrangement
-gso.order = shuffle([
-  'orange', 'blue', 'white', 'red',
-]);
+gso.order = shuffle(playerColors);
 // Rotate until top-left is player under control
 while (! gso.control[gso.order[1]]) {
   gso.order.unshift(gso.order.pop());
@@ -366,7 +449,6 @@ for (const [i, color] of gso.order.entries()) {
 for (const [x, xCost] of Object.entries(cost)) {
   const costDiv = qs(`.buy-${x} .cost`);
   for (const [r, n] of Object.entries(xCost)) {
-    console.log(`${x} requires ${n} of ${r}`);
     for (let i = 0; i < n; i++) {
       costDiv.append(makeCard('resource', r));
     }
@@ -380,6 +462,8 @@ for (const b of qsa('.player-area .badge')) {
   ael(b, 'click', () => showBadgeViewer(b));
 }
 ael('.my-turn', 'click', showTurnMenu);
+ael('.turn-menu .close', 'click', hideTurnMenu);
+ael('.play-development', 'click', chooseDevelopment);
 
 // Ensure that no template elements appear
 for (const t of qsa('template')) {
@@ -403,3 +487,5 @@ showExampleGame();
 // adjustCards('played');
 
 // nextSetupTurn();
+console.log(gso);
+console.log(gsc);

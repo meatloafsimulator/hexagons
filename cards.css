@@ -76,6 +76,7 @@
 
 .player-area .hand {
   height: 40px;
+  cursor: zoom-in;
 }
 .player-area.bottom .hand {
   align-items: end;
@@ -94,6 +95,7 @@
 .card-viewer .hand .card {
   --w: 48px;
   margin: 6px;
+  cursor: pointer;
 }
 .card-viewer .hand .card.selected {
   outline: solid 6px var(--color-gold);

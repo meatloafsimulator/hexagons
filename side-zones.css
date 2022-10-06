@@ -89,9 +89,12 @@
   margin: 3px 0;
   border: solid var(--color-gold) 1px;
   padding: 5px;
-  --sep: 6px;
   color: var(--color-gold);
   flex-direction: column;
+}
+.player-area .badge {
+  --sep: 6px;
+  cursor: zoom-in;  
 }
 .player-area.left .badge {
   margin-right: var(--sep);

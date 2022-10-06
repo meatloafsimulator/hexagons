@@ -41,9 +41,20 @@ button {
   background: #c7c9c8;
 /*  background: #d8d4d7;*/
   color: #000;
+  cursor: pointer;
 }
 button.primary {
   background: var(--color-gold);
+}
+button:disabled {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: not-allowed;
+}
+
+h1 {
+  display: none;
 }
 
 .circle {

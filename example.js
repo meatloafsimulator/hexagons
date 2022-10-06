@@ -2,14 +2,10 @@ import {qs} from './utility.js';
 import {resources} from './constants.js';
 import {
   placeRoad, placeHouse, gainCard, awardBadge,
-  showPlayerName, adjustCards,
+  showPlayerName, adjustCards, gso, gsc,
 } from './hexagons.js';
 
 export function showExampleGame() {
-
-  const playerVisible = {
-    orange: true,
-  };
 
   const roads = {
     orange: [19, 21, 29, 31, 40],
@@ -56,10 +52,10 @@ export function showExampleGame() {
   for (
     const [color, hand] of Object.entries(handsR)
   ) {
-    for (const [i, resource] of resources.entries()) {
-      for (let n = 0; n < hand[i]; n++) {
-        const cardName = playerVisible[color] ?
-            resource : null;
+    for (const [i, r] of resources.entries()) {
+      const n = hand[i];
+      for (let j = 0; j < n; j++) {
+        const cardName = gso.control[color] ? r : '';
         gainCard(color, 'resource', cardName);
       }
     }  
@@ -75,16 +71,26 @@ export function showExampleGame() {
     const [color, hand] of Object.entries(handsD)
   ) {
     for (const card of hand) {
-      const cardName =
-          playerVisible[color] ? card : null;
+      const cardName = gso.control[color] ? card : '';
       gainCard(color, 'development', cardName);
+    }
+  }
+
+  const unripeD = {
+    orange: ['year-of-plenty'],
+  };
+  for (
+    const [color, arr] of Object.entries(unripeD)
+  ) {
+    for (const card of arr) {
+      gainCard(color, 'unripe', card);
     }
   }
 
   const playedD = {
     orange: [
       'knight', 'knight', 'knight',
-      'road-building', 'monopoly', 'year-of-plenty',
+      'road-building', 'monopoly',
     ],
     blue: ['knight', 'road-building'],
     white: ['knight', 'year-of-plenty'],
@@ -97,7 +103,7 @@ export function showExampleGame() {
       gainCard(color, 'played', card);
     }
   }
-
+  
   const remainingD = ['knight', 'vp-chapel'];
 
   awardBadge('orange', 'largest-army');
@@ -115,6 +121,9 @@ export function showExampleGame() {
   
   adjustCards();
   
+  gso.setup = 0;
+  gso.turn = gso.order.indexOf('orange');
+  // gso.playedDevelopmentOnTurn = true;
   qs('.player-area.orange .username').classList.add(
     'on-turn'
   );

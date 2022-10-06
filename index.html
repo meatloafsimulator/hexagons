@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="side-zones.css">
 <link rel="stylesheet" href="turn-menu.css">
 <script type="module" src="hexagons.js"></script>
+<h1>Settlers of Catan</h1>
 <section class="side-zone left">
   <section class="median">
     <button type="button" class="primary my-turn">
@@ -45,26 +46,57 @@
   </button>
 </section>
 <section class="turn-menu overlay centered">
-  <div class="section-header">Buy</div>
-  <div class="buy-options centered">
-    <div class="buy-road">
-      <button type="button">Road</button>
-      <div class="cost centered"></div>
+  <section class="start-turn centered">
+    <h2>Start Turn</h2>
+    <div class="choices centered">
+      <button type="button">Roll Dice</button>
+      <button type="button">
+        Play Development Card
+      </button>
     </div>
-    <div class="buy-settlement">
-      <button type="button">Settlement</button>
-      <div class="cost centered"></div>
+  </section>
+  <section class="buy centered">
+    <h2>Make Purchases</h2>
+    <div class="choices centered">
+      <div class="buy-road">
+        <button type="button">Road</button>
+        <div class="cost centered"></div>
+      </div>
+      <div class="buy-settlement">
+        <button type="button">Settlement</button>
+        <div class="cost centered"></div>
+      </div>
+      <div class="buy-city">
+        <button type="button">City</button>
+        <div class="cost centered"></div>
+      </div>
+      <div class="buy-development">
+        <button type="button">
+          Development Card
+        </button>
+        <div class="cost centered"></div>
+      </div>
     </div>
-    <div class="buy-city">
-      <button type="button">City</button>
-      <div class="cost centered"></div>
+  </section>
+  <section class="trade centered">
+    <h2>Play and Trade Cards</h2>
+    <div class="choices centered">
+      <button type="button" class="play-development">
+        Play Development Card
+      </button>
+      <button type="button">Trade With Bank</button>
+      <!-- <button type="button">Trade With Player</button> -->
     </div>
-    <div class="buy-development">
-      <button type="button">Development Card</button>
-      <div class="cost centered"></div>
+  </section>
+  <section class="other centered">
+    <h2>Other Actions</h2>
+    <div class="choices centered">
+      <button type="button" class="close">
+        Hide Turn Menu
+      </button>
+      <button type="button">End My Turn</button>
     </div>
-  </div>
-  <div></div>
+  </section>
 </section>
 <template class="settlement">
   <svg class="settlement piece" viewbox="0 0 6 6">
