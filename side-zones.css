@@ -37,8 +37,6 @@
   content: "⇨";
 }
 
-/* For hands and cards, see cards.css */
-
 .houses {
   align-items: end;
   height: 28px;
@@ -76,90 +74,6 @@
   margin-right: 0;
 }
 
-.player-area .badges {
-  height: 40px;
-}
-.player-area.bottom .badges {
-  align-items: end;
-}
-.badge {
-  box-sizing: border-box;
-  height: 30px;
-  width: 72px;
-  margin: 3px 0;
-  border: solid var(--color-gold) 1px;
-  padding: 5px;
-  color: var(--color-gold);
-  flex-direction: column;
-}
-.player-area .badge {
-  --sep: 6px;
-  cursor: zoom-in;  
-}
-.player-area.left .badge {
-  margin-right: var(--sep);
-}
-.player-area.right .badge {
-  margin-left: var(--sep);
-}
-.badge:not(.awarded) {
-  display: none;
-}
-.largest-army {
-  background: #6a2a60;
-}
-.longest-road {
-  background: #343741;
-}
-.badge .icon {
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-.badge img {
-  width: 18px;
-}
-.badge > :not(.icon) {
-  display: none;
-}
-
-.badge-viewer {
-  flex-direction: column;
-}
-.badge-viewer .badge {
-  height: 378px;
-  width: 486px;
-  border-width: 12px;
-  margin: 12px;
-  padding: 0 12px;
-  justify-content: space-evenly;
-}
-.badge-viewer .badge .badge-title {
-  display: block;
-  font-size: 30px;
-  font-weight: bold;
-}
-.badge-viewer .badge img {
-  width: 144px;
-}
-.badge-viewer .badge .badge-vp {
-  display: block;
-  padding: 6px 12px;
-  border: solid 6px var(--color-gold);
-  border-radius: 6px;
-  font-weight: bold;
-}
-.badge-viewer .badge .badge-text {
-  display: block;
-  margin: 0 12px;
-  text-align: center;
-}
-.badge-viewer button {
-  width: 228px;
-  margin: 12px;
-}
-
 .median {
   height: 80px;
   display: flex;
@@ -172,3 +86,7 @@
 .median button {
   width: 140px;
 }
+
+/* For hands and cards, see cards.css */
+
+/* For badges, see badges.css */

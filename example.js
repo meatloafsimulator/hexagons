@@ -106,8 +106,8 @@ export function showExampleGame() {
   
   const remainingD = ['knight', 'vp-chapel'];
 
-  awardBadge('orange', 'largest-army');
-  awardBadge('blue', 'longest-road');
+  awardBadge('largest-army', 'orange');
+  awardBadge('longest-road', 'blue');
 
   const names = {
     orange: 'Graham',

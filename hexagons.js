@@ -135,7 +135,6 @@ function gainStartingHand(color, site) {
   }
   adjustCards('resource');
 }
-
 export function adjustCards(kind) {
   if (! kind) {
     const all = ['resource', 'development', 'played'];
@@ -175,11 +174,19 @@ export function adjustCards(kind) {
   }
 }
 
-export function awardBadge(color, type) {
-  qs(`.${type}.awarded`)?.classList.remove('awarded');
+function makeBadge(type) {
+  const badge = fromTemplate('badge');
+  badge.classList.add(type);
+  qs('img:not([src])', badge).src = 
+      `img/badge/${type}.svg`;
+  ael(badge, 'click', () => showBadgeViewer(badge));
+  return badge;
+}
+export function awardBadge(type, color) {
+  qs(`.player-area .${type}`)?.remove();
   if (! color) return;
-  const badge = qs(`.player-area.${color} .${type}`);
-  badge.classList.add('awarded');
+  const badge = makeBadge(type);
+  qs(`.player-area.${color} .badges`).append(badge);
 }
 
 function okRoad(color, edge) {
@@ -308,15 +315,17 @@ function enlargeCard(card) {
     ! card.classList.contains('unknown')
   ) {
     let cardKey = cardName;
-    if (cardName.startsWith('vp')) cardKey = 'vp';
-    const cardText = fromTemplate(
+    const p = qs('p', bigCard);
+    if (cardName.startsWith('vp')) {
+      cardKey = 'vp';
+      p.classList.add('vp');
+    }
+    p.innerHTML = fromTemplate(
       `development-text.${cardKey}`, true
     );
-    qs('.card-text', bigCard).innerHTML = cardText;
-    const cardTitle = fromTemplate(
+    qs('h2', bigCard).innerHTML = fromTemplate(
       `development-title.${cardName}`, true
     );
-    qs('.card-title', bigCard).innerHTML = cardTitle;
   }
   return bigCard;
 }
@@ -334,17 +343,14 @@ function hideBadgeViewer(badge) {
   qs('.badge', bv).remove();
 }
 function enlargeBadge(badge) {
+  const type = ['largest-army', 'longest-road'].find(
+    x => badge.classList.contains(x)
+  );
   const bigBadge = badge.cloneNode(true);
-  const [la, lr] = ['largest-army', 'longest-road'];
-  const bKey = badge.classList.contains(la) ? la : lr;
-  const badgeTitle = fromTemplate(
-    `badge-title.${bKey}`, true
-  );
-  const badgeText = fromTemplate(
-    `badge-text.${bKey}`, true
-  );
-  qs('.badge-title', bigBadge).innerHTML = badgeTitle;
-  qs('.badge-text', bigBadge).innerHTML = badgeText;
+  qs('h2', bigBadge).innerHTML =
+      fromTemplate(`badge-title.${type}`, true);
+  qs('p:not(.vp)', bigBadge).innerHTML =
+      fromTemplate(`badge-text.${type}`, true);
   return bigBadge;
 }
 

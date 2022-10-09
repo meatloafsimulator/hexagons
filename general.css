@@ -56,6 +56,20 @@ button:disabled {
 h1 {
   display: none;
 }
+h2 {
+  margin: 0;
+}
+p {
+  margin: 0 12px;
+  text-align: center;
+}
+p.vp {
+  padding: 6px 12px;
+  border: solid 6px currentColor;
+  border-radius: 6px;
+  font-weight: bold;
+  background: var(--color-vp-bg, none);
+}
 
 .circle {
   border-radius: 50%;

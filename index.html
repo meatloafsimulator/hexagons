@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="general.css">
 <link rel="stylesheet" href="board.css">
 <link rel="stylesheet" href="cards.css">
+<link rel="stylesheet" href="badges.css">
 <link rel="stylesheet" href="pieces.css">
 <link rel="stylesheet" href="side-zones.css">
 <link rel="stylesheet" href="turn-menu.css">
@@ -125,33 +126,20 @@
     <div class="roads"></div>
     <div class="username"></div>
     <div class="hand played"></div>
-    <div class="badges">
-      <div class="badge centered largest-army">
-        <div class="badge-title"></div>
-        <div class="icon">
-          <img src="img/badge/star.svg">
-          <img src="img/badge/army.svg">
-          <img src="img/badge/star.svg">
-        </div>
-        <div class="badge-vp">
-          Two Victory Points!
-        </div>
-        <div class="badge-text"></div>
-      </div>
-      <div class="badge centered longest-road">
-        <div class="badge-title"></div>
-        <div class="icon">
-          <img src="img/badge/star.svg">
-          <img src="img/badge/road.svg">
-          <img src="img/badge/star.svg">
-        </div>
-        <div class="badge-vp">
-          Two Victory Points!
-        </div>
-        <div class="badge-text"></div>
-      </div>
-    </div>
+    <div class="badges"></div>
   </section>
+</template>
+<template class="badge">
+  <div class="badge centered">
+    <h2></h2>
+    <div class="icon">
+      <img src="img/badge/star.svg">
+      <img>
+      <img src="img/badge/star.svg">
+    </div>
+    <p class="vp">Two Victory Points!</p>
+    <p></p>
+  </div>
 </template>
 <template class="resource">
   <div class="card resource">
@@ -164,9 +152,9 @@
 <template class="development">
   <div class="card development">
     <div class="face front centered">
-      <div class="card-title"></div>
+      <h2></h2>
       <div class="icon centered"><img></div>
-      <div class="card-text"></div>
+      <p></p>
     </div>
     <div class="face back"></div>
   </div>

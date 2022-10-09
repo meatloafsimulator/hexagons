@@ -27,11 +27,6 @@
   display: block;
 }
 
-.card-name,
-.card-text {
-  display: none;
-}
-
 .card.resource .face {
   background: var(--color-resource);
   border-radius: var(--b-r-inner);
@@ -68,10 +63,15 @@
 }
 .card.development.vp {
   --color-development-type: #000;
+  --color-vp-bg: var(--color-gold);
 }
 .card.development .back {
   background: #ffc;
   border-radius: var(--b-r-inner);
+}
+
+.hand .card :is(h2, p) {
+  display: none;  
 }
 
 .player-area .hand {
@@ -112,25 +112,8 @@
 .card-viewer .zoomed .face {
   justify-content: space-evenly;
 }
-.card-viewer .zoomed .card-title {
-  display: block;
-  font-size: 30px;
-  font-weight: bold;
-}
 .card-viewer .zoomed .icon img {
   width: 144px;
-}
-.card-viewer .zoomed .card-text {
-  display: block;
-  margin: 0 12px;
-  text-align: center;
-}
-.card-viewer .zoomed .vp .card-text {
-  background: var(--color-gold);
-  padding: 6px 12px;
-  border: solid 6px #000;
-  border-radius: 6px;
-  font-weight: bold;
 }
 .card-viewer button {
   width: 228px;

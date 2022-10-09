@@ -1,0 +1,66 @@
+.player-area .badges {
+  height: 40px;
+}
+.player-area.bottom .badges {
+  align-items: end;
+}
+
+.badge {
+  box-sizing: border-box;
+  height: 30px;
+  width: 72px;
+  margin: 3px 0;
+  border: solid var(--color-gold) 1px;
+  padding: 5px;
+  color: var(--color-gold);
+  flex-direction: column;
+}
+.player-area .badge {
+  --sep: 6px;
+  cursor: zoom-in;  
+}
+.player-area.left .badge {
+  margin-right: var(--sep);
+}
+.player-area.right .badge {
+  margin-left: var(--sep);
+}
+
+.largest-army {
+  background: #6a2a60;
+}
+.longest-road {
+  background: #343741;
+}
+.badge .icon {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.badge img {
+  width: 18px;
+}
+
+.badges .badge :is(h2, p)  {
+  display: none;
+}
+
+.badge-viewer {
+  flex-direction: column;
+}
+.badge-viewer .badge {
+  height: 378px;
+  width: 486px;
+  border-width: 12px;
+  margin: 12px;
+  padding: 0 12px;
+  justify-content: space-evenly;
+}
+.badge-viewer .badge img {
+  width: 144px;
+}
+.badge-viewer button {
+  width: 228px;
+  margin: 12px;
+}
