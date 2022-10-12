@@ -92,6 +92,12 @@
 .card-viewer {
   flex-direction: column;
 }
+.card-viewer .hand {
+  width: 1000px;
+  max-height: 168px;
+  flex-wrap: wrap;
+  z-index: 1;
+}
 .card-viewer .hand .card {
   --w: 48px;
   margin: 6px;

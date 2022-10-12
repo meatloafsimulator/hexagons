@@ -44,8 +44,8 @@ export function showExampleGame() {
   }
 
   const handsR = {
-    // orange: [2, 1, 1, 2, 3],
-    orange: [4, 4, 4, 4, 4],
+    orange: [2, 1, 1, 2, 3],
+    // orange: [4, 4, 4, 4, 4],
     blue:   [3, 0, 1, 0, 1],
     white:  [0, 3, 0, 1, 0],
     red:    [0, 0, 2, 3, 0],
