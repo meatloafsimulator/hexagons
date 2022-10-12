@@ -76,7 +76,6 @@
 
 .player-area .hand {
   height: 40px;
-  cursor: zoom-in;
 }
 .player-area.bottom .hand {
   align-items: end;
@@ -84,6 +83,7 @@
 .player-area .card {
   --w: 24px;
   margin: 0 2px 0 var(--adj, 0);
+  cursor: zoom-in;
 }
 .player-area.right .card:last-child {
   margin-right: 0;
