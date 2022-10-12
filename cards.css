@@ -115,10 +115,20 @@
 .card-viewer .zoomed .icon img {
   width: 144px;
 }
-.card-viewer button {
-  width: 228px;
-  margin: 12px;
-}
 .card-viewer button.play {
   display: none;
+}
+
+.trade-menu .hand {
+  padding: 6px;
+  margin: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.trade-menu .card {
+  --w: 36px;
+  margin: 2px;
+}
+.trade-menu .selected {
+  outline: solid 6px var(--color-gold);
 }

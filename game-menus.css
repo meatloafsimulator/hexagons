@@ -16,11 +16,14 @@
   margin: 18px;
 }
 
-.turn-menu .start-turn {
+.turn-menu:not(.before-roll) .initial-phase {
+  display: none;
+}
+.turn-menu.before-roll .main-phase {
   display: none;
 }
 
-.turn-menu .buy button {
+.turn-menu .buy-actions button {
   width: 220px;
 }
 .cost {
@@ -29,4 +32,12 @@
 .cost .card {
   --w: 24px;
   margin: 2px;
+}
+
+.trade-menu {
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+.trade-menu section {
+  flex-direction: column;
 }

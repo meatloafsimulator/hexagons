@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="badges.css">
 <link rel="stylesheet" href="pieces.css">
 <link rel="stylesheet" href="side-zones.css">
-<link rel="stylesheet" href="turn-menu.css">
+<link rel="stylesheet" href="game-menus.css">
 <script type="module" src="hexagons.js"></script>
 <h1>Settlers of Catan</h1>
 <section class="side-zone left">
@@ -29,7 +29,7 @@
     </button>
   </section>
 </section>
-<section class="card-viewer overlay centered">
+<section class="card-viewer modal centered">
   <div class="hand centered"></div>
   <div class="zoomed"></div>
   <div>
@@ -41,13 +41,13 @@
     </button>
   </div>
 </section>
-<section class="badge-viewer overlay centered">
+<section class="badge-viewer modal centered">
   <button type="button" class="close">
     Return to Game
   </button>
 </section>
-<section class="turn-menu overlay centered">
-  <section class="start-turn centered">
+<section class="turn-menu modal centered">
+  <section class="initial-phase centered">
     <h2>Start Turn</h2>
     <div class="choices centered">
       <button type="button">Roll Dice</button>
@@ -56,7 +56,7 @@
       </button>
     </div>
   </section>
-  <section class="buy centered">
+  <section class="main-phase buy-actions centered">
     <h2>Make Purchases</h2>
     <div class="choices centered">
       <div class="buy-road">
@@ -79,19 +79,21 @@
       </div>
     </div>
   </section>
-  <section class="trade centered">
+  <section class="main-phase card-actions centered">
     <h2>Play and Trade Cards</h2>
     <div class="choices centered">
       <button type="button" class="play-development">
         Play Development Card
       </button>
-      <button type="button" class="trade-bank">
+      <button type="button" class="with-bank">
         Trade With Bank
       </button>
-      <!-- <button type="button">Trade With Player</button> -->
+      <!-- <button type="button" class="with-player">
+        Trade With Player
+      </button> -->
     </div>
   </section>
-  <section class="other centered">
+  <section class="other-actions centered">
     <h2>Other Actions</h2>
     <div class="choices centered">
       <button type="button" class="close">
@@ -100,6 +102,24 @@
       <button type="button">End My Turn</button>
     </div>
   </section>
+</section>
+<section class="trade-menu with-bank modal centered">
+  <section class="give centered">
+    <h2>Give to Bank</h2>
+    <div class="choices centered"></div>
+  </section>
+  <section class="receive centered">
+    <h2>Receive from Bank</h2>
+    <div class="choices centered"></div>
+  </section>
+  <div>
+    <button type="button" class="make-trade" disabled>
+      Make Trade
+    </button>
+    <button type="button" class="close">
+      Return to Game
+    </button>
+  </div>
 </section>
 <template class="settlement">
   <svg class="settlement piece" viewbox="0 0 6 6">

@@ -85,6 +85,7 @@
 }
 .median button {
   width: 140px;
+  margin: 0;
 }
 
 /* For hands and cards, see cards.css */

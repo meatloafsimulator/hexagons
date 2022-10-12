@@ -273,13 +273,10 @@ function showCardViewer(card, showPlayButton) {
   playButton.disabled =
       card.classList.contains('vp') ||
       card.classList.contains('unripe');
-  setTimeout(
-    () => {
-      hideTurnMenu();
-      cv.style.display = 'flex';
-    },
-    config.delay
-  );
+  setTimeout(() => {
+    hideTurnMenu();
+    cv.style.display = 'flex';
+  }, config.delay);
 }
 function hideCardViewer() {
   const cv = qs('.card-viewer');
@@ -293,15 +290,12 @@ function swapCardViewer(card) {
   card.classList.add('selected');
   const z = qs('.zoomed', cv);
   const cNew = enlargeCard(card);
-  setTimeout(
-    () => {
-      z.replaceChildren(cNew);
-      qs('.play', cv).disabled =
-          card.classList.contains('vp') ||
-          card.classList.contains('unripe');
-    },
-    config.delay
-  );
+  setTimeout(() => {
+    z.replaceChildren(cNew);
+    qs('.play', cv).disabled =
+        card.classList.contains('vp') ||
+        card.classList.contains('unripe');
+  }, config.delay);
 }
 function enlargeCard(card) {
   const bigCard = card.cloneNode(true);
@@ -333,9 +327,9 @@ function enlargeCard(card) {
 function showBadgeViewer(badge) {
   const bv = qs('.badge-viewer');
   bv.prepend(enlargeBadge(badge));
-  setTimeout(
-    () => {bv.style.display = 'flex';}, config.delay
-  );
+  setTimeout(() => {
+    bv.style.display = 'flex';
+  }, config.delay);
 }
 function hideBadgeViewer(badge) {
   const bv = qs('.badge-viewer');
@@ -356,6 +350,7 @@ function enlargeBadge(badge) {
 
 function showTurnMenu() {
   const tm = qs('.turn-menu');
+  // tm.classList.toggle('before-roll', ! gso.roll);
   const color = gso.order[gso.turn];
   const rHand = gsc.hands[color].resource;
   for (const [x, xCost] of Object.entries(cost)) {
@@ -366,25 +361,62 @@ function showTurnMenu() {
     qs(`.buy-${x} button`, tm).disabled = ! afford;
   }
   const nCards = gso.hands[color];
-  qs('.play-development').disabled =
+  qs('.play-development', tm).disabled =
       gso.playedDevelopmentOnTurn ||
       ! (nCards.development + nCards.unripe);
-  const portStatus = onPort(color);
-  let okTradeWithBank = false;
-  for (const [r, n] of Object.entries(rHand)) {
-    const rate = exchangeRate[
-      portStatus[r] ? 'portSpecific' :
-      portStatus.generic ? 'portGeneric' : 'general'
-    ];
-    if (n >= rate) okTradeWithBank = true;
-  }
-  qs('.trade-bank').disabled = ! okTradeWithBank;
-  setTimeout(
-    () => {tm.style.display = 'flex';}, config.delay
-  );
+  qs('.with-bank', tm).disabled =
+      ! Object.keys(bankTradeChoices(color)).length;
+  setTimeout(() => {
+    tm.style.display = 'flex';
+  }, config.delay);
 }
 function hideTurnMenu() {
   qs('.turn-menu').style.display = 'none';
+}
+
+function showTradeBank() {
+  const twbm = qs('.trade-menu.with-bank');
+  const button = qs('.make-trade', twbm);
+  const color = gso.order[gso.turn];
+  const choicesObj = bankTradeChoices(color);
+  const cReceive = qs('.receive .choices', twbm);
+  const cGive = qs('.give .choices', twbm);
+  for (const r of resources) {
+    const hReceive = document.createElement('div');
+    hReceive.classList.add('hand', 'centered');
+    const hGive = hReceive.cloneNode(true);
+    hReceive.append(makeCard('resource', r));
+    ael(hReceive, 'click', () => {
+      const previous = qs('.selected', cReceive);
+      previous?.classList.remove('selected');
+      hReceive.classList.add('selected');
+      button.disabled = ! qs('.selected', cGive);
+    });
+    cReceive.append(hReceive);
+    if (! choicesObj[r]) continue;
+    for (let i = 0; i < choicesObj[r]; i++) {
+      hGive.append(makeCard('resource', r));
+    }
+    ael(hGive, 'click', () => {
+      const previous = qs('.selected', cGive);
+      previous?.classList.remove('selected');
+      hGive.classList.add('selected');
+      button.disabled = ! qs('.selected', cReceive);
+    });
+    cGive.append(hGive);
+  }
+  setTimeout(() => {
+    hideTurnMenu();
+    twbm.style.display = 'flex';
+  }, config.delay);
+}
+function hideTradeBank() {
+  const twbm = qs('.trade-menu.with-bank');
+  twbm.style.display = 'none';
+  for (const c of qsa('.choices', twbm)) {
+    c.replaceChildren();
+  }
+  qs('.make-trade', twbm).disabled = true;
 }
 
 function chooseDevelopment() {
@@ -410,6 +442,20 @@ function onPort(color) {
   return result;
 }
 
+function bankTradeChoices(color) {
+  const hand = gsc.hands[color].resource;
+  const portStatus = onPort(color);
+  const result = {};
+  for (const [r, n] of Object.entries(hand)) {
+    const rate = exchangeRate[
+      portStatus[r] ? 'portSpecific' :
+      portStatus.generic ? 'portGeneric' : 'general'
+    ];
+    if (n >= rate) result[r] = rate;
+  }
+  return result;
+}
+
 // Game initialization starts here
 
 // Make and render board
@@ -426,6 +472,7 @@ if (robber > -1) moveRobber(robber);
 export const gso = {
   setup: 2,
   turn: -1,
+  roll: null,
   playedDevelopmentOnTurn: false,
   houses: sites.map(s => ''),
   roads: edges.map(e => ''),
@@ -488,9 +535,11 @@ for (const b of qsa('.player-area .badge')) {
 ael('.my-turn', 'click', showTurnMenu);
 ael('.turn-menu .close', 'click', hideTurnMenu);
 ael('.play-development', 'click', chooseDevelopment);
+ael('button.with-bank', 'click', showTradeBank);
+ael('.with-bank .close', 'click', hideTradeBank);
 
-// Ensure that no template elements appear
-for (const t of qsa('template')) {
+// Ensure that no template or modal elements appear
+for (const t of qsa('template, .modal')) {
   t.style.display = 'none';
 }
 
