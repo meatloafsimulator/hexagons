@@ -89,9 +89,6 @@
   margin-right: 0;
 }
 
-.card-viewer {
-  flex-direction: column;
-}
 .card-viewer .hand {
   width: 1000px;
   max-height: 168px;
@@ -137,4 +134,32 @@
 }
 .trade-menu .selected {
   outline: solid 6px var(--color-gold);
+}
+
+.discard-menu h2 {
+  margin: 12px;
+}
+.discard-menu h2 span {
+  text-transform: capitalize;
+}
+.discard-menu .choices {
+  width: 1000px;
+  flex-wrap: wrap;
+}
+.discard-menu .hand {
+  padding: 8px;
+  margin: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.discard-menu .card {
+  --w: 48px;
+}
+.discard-menu .selected {
+  outline: solid 6px var(--color-gold);
+}
+
+.hand.unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

@@ -1,5 +1,4 @@
 .turn-menu {
-  flex-direction: column;
   justify-content: space-evenly;
   padding-bottom: 36px;
 }
@@ -35,9 +34,64 @@
 }
 
 .trade-menu {
-  flex-direction: column;
   justify-content: space-evenly;
 }
 .trade-menu section {
   flex-direction: column;
+}
+
+.dialog-confirm-cancel {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  box-sizing: border-box;
+  --h: 150px;
+  --w: 200px;
+  --m: 40px;
+  height: var(--h);
+  width: var(--w);
+  top: calc(
+    var(--t) - var(--h) / 2 +
+    var(--ab, 0) * (var(--h) / 2 + var(--m))
+  );
+  left: calc(var(--l) - var(--w) / 2);
+  font-size: 25px;
+  background: #ccca;
+  color: #000;
+  backdrop-filter: blur(10px);
+  border: solid 1.5px #000;
+  z-index: 3;
+  border-radius: 12px;
+  padding: 12px;
+  justify-content: space-evenly;
+}
+.dialog-confirm-cancel .prompt {
+  margin-left: 6px;
+}
+.dialog-confirm-cancel .choices {
+  width: 100%;
+  justify-content: space-evenly;
+}
+.dialog-confirm-cancel button {
+  width: 60px;
+  margin: 0;
+  justify-content: space-evenly;
+}
+.dialog-confirm-cancel button svg {
+  height: 30px;
+  width: 30px;
+}
+.dialog-confirm-cancel button svg line {
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.modal.explanation {
+  z-index: 4;
+}
+.modal.explanation .prompt {
+  font-size: 25px;
+  max-width: 600px;
+  margin: 20px;
 }

@@ -1,9 +1,10 @@
 import {
-  qs, qsa, ael, shuffle, draw, sum, seq,
+  qs, qsa, ael, shuffle, draw, sum, seq, rep,
 } from './utility.js';
 import {
-  resources, cost, pieceCount, developmentCount,
-  playerColors, exchangeRate, config,
+  resources, cost, pieceCount,
+  resourceCount, developmentCount, vpCards,
+  playerColors, exchangeRate, numberWords, config,
 } from './constants.js';
 import {
   w, sites, edges, neighbors, centers, hexSites, 
@@ -12,26 +13,24 @@ import {
 import {makeBoard, boardCode} from './make-board.js';
 import {renderBoard} from './render-board.js';
 
-function fromTemplate(className, textOnly) {
+function fromTemplate(className) {
   const content = qs(`template.${className}`).content;
-  if (textOnly) {
-    return content.firstChild.textContent.trim();
-  }
-  return content.firstElementChild.cloneNode(true);
+  return content.childElementCount ?
+      content.firstElementChild.cloneNode(true) :
+      content.textContent.trim();
 }
 
 function makePlayerArea(i, color) {
   const pa = fromTemplate('player-area');
   pa.classList.add(color);
-  const isRight = i > 1;
   const isTop = i % 3;
-  const side = isRight ? 'right' : 'left';
+  const side = i > 1 ? 'right' : 'left';
   pa.classList.add(side, isTop ? 'top' : 'bottom');
   const sz = qs(`.side-zone.${side}`);
   sz[isTop ? 'prepend' : 'append'](pa);
   for (const houseType of ['city', 'settlement']) {
     for (let n = 0; n < pieceCount[houseType]; n++) {
-      stockHouse(color, houseType, isRight);
+      stockHouse(color, houseType);
     }
   }
   for (let n = 0; n < pieceCount.road; n++) {
@@ -61,14 +60,18 @@ export function placeHouse(color, type, site) {
   e.classList.add(color, siteClassString);
   e.setAttribute('style', `--l: ${l}; --t: ${t};`);
   const pa = qs(`.player-area.${color}`);
-  if (pa.classList.contains('right')) {
-    e.classList.add('flipped');
-  }
-  qs(`.player-area.${color} .${type}`).remove();
+  const isRight = pa.classList.contains('right');
+  e.classList.toggle('flipped', isRight);
+  qs(`.${type}`, pa).remove();
   qs('.on-board').append(e);
   let c = color.substring(0, 1);
-  if (type === 'city') c = c.toUpperCase();
+  if (type === 'city') {
+    c = c.toUpperCase();
+    stockHouse(color, 'settlement');
+    gso.piecesLeft[color].settlement++;
+  }
   gso.houses[site] = c;
+  gso.piecesLeft[color][type]--;
   if (gso.setup === 1) gainStartingHand(color, site);
 }
 export function placeRoad(color, edge) {
@@ -77,13 +80,16 @@ export function placeRoad(color, edge) {
   e.classList.remove('invisible');
   e.classList.add(color);
   gso.roads[edge] = color.substring(0, 1);
+  gso.piecesLeft[color].road--;
 }
 
-function stockHouse(color, type, flipped) {
+function stockHouse(color, type) {
   const e = fromTemplate(type);
   e.classList.add(color);
-  if (flipped) e.classList.add('flipped');
-  qs(`.player-area.${color} .houses`).append(e);
+  const pa = qs(`.player-area.${color}`);
+  const isRight = pa.classList.contains('right');
+  e.classList.toggle('flipped', isRight);
+  qs('.houses', pa).append(e);
 }
 function stockRoad(color) {
   const e = document.createElement('div');
@@ -93,18 +99,19 @@ function stockRoad(color) {
 
 function makeCard(kind, cardName) {
   const card = fromTemplate(kind);
+  card.dataset.name = cardName;
   if (cardName) {
     const type = kind === 'resource' ? cardName :
-        cardName === 'knight' ? 'knight' :
-        cardName.startsWith('vp') ? 'vp' : 'progress';
-    card.classList.add(type, cardName);
+        vpCards.includes(cardName) ? 'vp' :
+        cardName === 'knight' ? 'knight' : 'progress';
+    card.classList.add(type);
     const i = type === 'vp' ? 'vp' : cardName;
     qs('img', card).src = `img/${kind}/${i}.svg`;
   } else card.classList.add('unknown');
   return card;
 }
 export function gainCard(color, loc, cardName) {
-  
+
   // Add card visually
   const kind = loc === 'resource' ?
       'resource' : 'development';
@@ -114,7 +121,7 @@ export function gainCard(color, loc, cardName) {
   const hand = loc === 'unripe' ? 'development' : loc;
   const sel = `.player-area.${color} .hand.${hand}`;
   qs(sel).append(card);
-  
+
   // Add card in game state
   if (loc === 'played') {
     gso.hands[color][loc][cardName]++;
@@ -123,7 +130,22 @@ export function gainCard(color, loc, cardName) {
   gso.hands[color][loc]++;
   if (! gso.control[color]) return;
   gsc.hands[color][loc][cardName]++;
+
+}
+function makeCardPlayed(color, cardName) {
+
+  // Move card visually
+  const sel = `.player-area.${color} .hand.development
+      [data-name="${cardName}"]:not(.unripe)`;
+  qs(sel).remove();
+  gainCard(color, 'played', cardName);
   
+  // Move card in game state
+  gso.hands[color].development--;
+  gso.hands[color].played[cardName]++;
+  if (! gso.control[color]) return;
+  gsc.hands[color].development[cardName]--;
+
 }
 function gainStartingHand(color, site) {
   const adjacentHexes = board.hexes.filter(
@@ -228,6 +250,7 @@ function sitesClickable(color, type) {
 }
 
 function nextSetupTurn() {
+  const cb = qs('.confirm-build');
   if (gso.setup === 2) gso.turn++; else gso.turn--;
   if (gso.turn === gso.order.length) {
     gso.setup--;
@@ -235,10 +258,15 @@ function nextSetupTurn() {
   } else if (gso.turn === -1) {
     gso.setup--;
     gso.turn++;
+    qs('.board').style.zIndex = 0;
     nextTurn();
+    cb.dataset.free = false;
     return;
   }
   sitesClickable(gso.order[gso.turn], 'settlement');
+  cb.dataset.type = 'settlement';
+  cb.dataset.free = true;
+  qs('.board').style.zIndex = 2;
 }
 function nextTurn() {
   
@@ -246,14 +274,81 @@ function nextTurn() {
 
 export function clickSite(site) {
   sitesClickable(false);
-  const color = gso.order[gso.turn];
-  placeHouse(color, 'settlement', site);
-  if (gso.setup) edgesClickable(color);
+  qs(`.site-${site}`).classList.add('selected');
+  qs('.confirm-build').dataset.loc = site;
+  showConfirmBuild(sites[site]);
 }
 export function clickEdge(edge) {
   edgesClickable(false);
-  placeRoad(gso.order[gso.turn], edge);
-  if (gso.setup) nextSetupTurn();
+  qs(`.edge-${edge}`).classList.add('selected');
+  qs('.confirm-build').dataset.loc = edge;
+  const [s0, s1] = edges[edge].map(s => sites[s]);
+  const center = [0, 1].map(i => (s0[i] + s1[i]) / 2);
+  showConfirmBuild(center);
+}
+
+// Add confirm-build dialog
+{
+  const cb = fromTemplate('dialog-confirm-cancel');
+  cb.classList.add('confirm-build');
+  qs('.prompt', cb).innerHTML =
+      fromTemplate('ui-text.confirm-build');
+  qs('.board').append(cb);
+}
+
+function showConfirmBuild(svgCoords) {
+  const cb = qs('.confirm-build');
+  const [l, t] = convertCoordinates(svgCoords);
+  const ab = svgCoords[1] > 0 ? -1 : 1;
+  let style = `--l: ${l}; --t: ${t}; --ab: ${ab};`;
+  cb.style = style;
+  cb.style.display = 'flex';
+  qs('.median .cancel').style.display = 'none';
+}
+ael('.confirm-build .cancel', 'click', () => {
+  const cb = qs('.confirm-build');
+  qs('.selected').classList.remove('selected');
+  cb.style.display = 'none';
+  qs('.board').style.zIndex = 0;
+  if (gso.setup) {
+    const color = gso.order[gso.turn];
+    if (cb.dataset.type === 'road') {
+      edgesClickable(color);
+    } else sitesClickable(color, 'settlement');
+    return;
+  }
+  qs('.my-turn').style.display = 'block';
+  showTurnMenu();
+});
+ael('.confirm-build .confirm', 'click', () => {
+  const color = gso.order[gso.turn];
+  const cb = qs('.confirm-build');
+  const {type, loc, free} = cb.dataset;
+  qs('.selected').classList.remove('selected');
+  cb.style.display = 'none';
+  qs('.board').style.zIndex = 0;
+  if (! free) payCost(color, type);
+  if (type === 'road') {
+    placeRoad(color, loc);
+    if (gso.setup) nextSetupTurn();
+  } else {
+    placeHouse(color, type, loc);
+    if (gso.setup) {
+      edgesClickable(color);
+      cb.dataset.type = 'road';
+    }    
+  }
+  if (gso.setup) return;
+  qs('.my-turn').style.display = 'block';
+});
+
+function payCost(color, type) {
+  const payment = [];
+  for (const [r, n] of Object.entries(cost[type])) {
+    const c = gso.control[color] ? r : 'unknown';
+    for (let i = 0; i < n; i++) payment.push(c);
+  }
+  discard(color, payment);
 }
 
 function showCardViewer(card, showPlayButton) {
@@ -270,9 +365,11 @@ function showCardViewer(card, showPlayButton) {
   const playButton = qs('.play', cv);
   playButton.style.display =
       showPlayButton ? 'inline' : 'none';
-  playButton.disabled =
-      card.classList.contains('vp') ||
-      card.classList.contains('unripe');
+  playButton.classList.toggle(
+    'unavailable',
+    card.classList.contains('vp') ||
+        card.classList.contains('unripe')
+  );
   setTimeout(() => {
     hideTurnMenu();
     cv.style.display = 'flex';
@@ -282,8 +379,31 @@ function hideCardViewer() {
   const cv = qs('.card-viewer');
   cv.style.display = 'none';
   qs('.hand', cv).replaceChildren();
-  qs('.zoomed', cv).replaceChildren();
+  qs('.zoomed', cv).replaceChildren();  
 }
+ael('.card-viewer .close', 'click', hideCardViewer);
+ael('.card-viewer .play', 'click', () => {
+  const cv = qs('.card-viewer');
+  const card = qs('.selected', cv);
+  if (card.classList.contains('vp')) {
+    showExplanation(
+      `You don't play victory point cards directly.
+       They will be revealed for you automatically
+       whenever they allow you to win the game.`
+    );
+    return;
+  }
+  if (card.classList.contains('unripe')) {
+    showExplanation(
+      `You can't play a development card
+       that you purchased on the same turn.`
+    );
+    return;
+  }
+  const cardName = card.dataset.name;
+  hideCardViewer();
+  const color = gso.order[gso.turn];
+});
 function swapCardViewer(card) {
   const cv = qs('.card-viewer');
   qs('.selected', cv).classList.remove('selected');
@@ -292,34 +412,30 @@ function swapCardViewer(card) {
   const cNew = enlargeCard(card);
   setTimeout(() => {
     z.replaceChildren(cNew);
-    qs('.play', cv).disabled =
-        card.classList.contains('vp') ||
-        card.classList.contains('unripe');
+    qs('.play', cv).classList.toggle(
+      'unavailable',
+      card.classList.contains('vp') ||
+          card.classList.contains('unripe')      
+    );
   }, config.delay);
 }
 function enlargeCard(card) {
   const bigCard = card.cloneNode(true);
-  let cardName = '';
-  const names = Object.keys(developmentCount);
-  for (const cl of card.classList) {
-    if (names.includes(cl)) cardName = cl;
-  }
+  const cardName = card.dataset.name;
   if (
     card.classList.contains('development') &&
     ! card.classList.contains('unknown')
   ) {
     let cardKey = cardName;
     const p = qs('p', bigCard);
-    if (cardName.startsWith('vp')) {
+    if (vpCards.includes(cardName)) {
       cardKey = 'vp';
       p.classList.add('vp');
     }
-    p.innerHTML = fromTemplate(
-      `development-text.${cardKey}`, true
-    );
-    qs('h2', bigCard).innerHTML = fromTemplate(
-      `development-title.${cardName}`, true
-    );
+    p.innerHTML =
+        fromTemplate(`development-text.${cardKey}`);
+    qs('h2', bigCard).innerHTML =
+        fromTemplate(`development-title.${cardName}`);
   }
   return bigCard;
 }
@@ -331,20 +447,20 @@ function showBadgeViewer(badge) {
     bv.style.display = 'flex';
   }, config.delay);
 }
-function hideBadgeViewer(badge) {
+ael('.badge-viewer .close', 'click', () => {
   const bv = qs('.badge-viewer');
   bv.style.display = 'none';
-  qs('.badge', bv).remove();
-}
+  qs('.badge', bv).remove();  
+});
 function enlargeBadge(badge) {
   const type = ['largest-army', 'longest-road'].find(
     x => badge.classList.contains(x)
   );
   const bigBadge = badge.cloneNode(true);
   qs('h2', bigBadge).innerHTML =
-      fromTemplate(`badge-title.${type}`, true);
+      fromTemplate(`badge-title.${type}`);
   qs('p:not(.vp)', bigBadge).innerHTML =
-      fromTemplate(`badge-text.${type}`, true);
+      fromTemplate(`badge-text.${type}`);
   return bigBadge;
 }
 
@@ -358,25 +474,45 @@ function showTurnMenu() {
     for (const [r, n] of Object.entries(xCost)) {
       if (rHand[r] < n) afford = false;
     }
-    qs(`.buy-${x} button`, tm).disabled = ! afford;
+    const button = qs(`.buy-${x} button`, tm);
+    button.classList.toggle('unavailable', ! afford);
+    const left = gso.piecesLeft[color][x] ?? 
+        gso.developmentsLeft;
+    if (! left) button.classList.add('unavailable');
   }
   const nCards = gso.hands[color];
-  qs('.play-development', tm).disabled =
-      gso.playedDevelopmentOnTurn ||
-      ! (nCards.development + nCards.unripe);
-  qs('.with-bank', tm).disabled =
-      ! Object.keys(bankTradeChoices(color)).length;
+  qs('.play-development', tm).classList.toggle(
+    'unavailable',
+    gso.playedDevelopmentOnTurn ||
+    ! (nCards.development + nCards.unripe)
+  );
+  qs('.with-bank', tm).classList.toggle(
+    'unavailable',
+    ! Object.keys(bankTradeChoices(color)).length
+  );
   setTimeout(() => {
     tm.style.display = 'flex';
   }, config.delay);
 }
+ael('.my-turn', 'click', showTurnMenu);
 function hideTurnMenu() {
   qs('.turn-menu').style.display = 'none';
 }
-
-function showTradeBank() {
+ael('.turn-menu .close', 'click', hideTurnMenu);
+ 
+ael('button.with-bank', 'click', () => {
+  const button = qs('button.with-bank');
+  if (button.classList.contains('unavailable')) {
+    showExplanation(
+      `You don't have enough of any resource
+       to trade.`
+    );
+    return;
+  }
   const twbm = qs('.trade-menu.with-bank');
-  const button = qs('.make-trade', twbm);
+  const mtbcl = qs('.make-trade', twbm).classList;
+  mtbcl.add('unavailable');
+  qs('.note', twbm).style.display = 'none';
   const color = gso.order[gso.turn];
   const choicesObj = bankTradeChoices(color);
   const cReceive = qs('.receive .choices', twbm);
@@ -384,13 +520,21 @@ function showTradeBank() {
   for (const r of resources) {
     const hReceive = document.createElement('div');
     hReceive.classList.add('hand', 'centered');
+    hReceive.dataset.resource = r;
     const hGive = hReceive.cloneNode(true);
+    if(! gso.bank[r]) {
+      hReceive.classList.add('unavailable');
+      qs('.note', twbm).style.display = 'block';
+    }
     hReceive.append(makeCard('resource', r));
+    const s = `.selected:not([data-resource="${r}"])`;
     ael(hReceive, 'click', () => {
+      const hrcl = hReceive.classList;
+      if (hrcl.contains('unavailable')) return;
       const previous = qs('.selected', cReceive);
       previous?.classList.remove('selected');
-      hReceive.classList.add('selected');
-      button.disabled = ! qs('.selected', cGive);
+      hrcl.add('selected');      
+      mtbcl.toggle('unavailable', ! qs(s, cGive));
     });
     cReceive.append(hReceive);
     if (! choicesObj[r]) continue;
@@ -401,7 +545,7 @@ function showTradeBank() {
       const previous = qs('.selected', cGive);
       previous?.classList.remove('selected');
       hGive.classList.add('selected');
-      button.disabled = ! qs('.selected', cReceive);
+      mtbcl.toggle('unavailable', ! qs(s, cReceive));
     });
     cGive.append(hGive);
   }
@@ -409,23 +553,122 @@ function showTradeBank() {
     hideTurnMenu();
     twbm.style.display = 'flex';
   }, config.delay);
-}
-function hideTradeBank() {
+});
+function hideBankTradeMenu() {
   const twbm = qs('.trade-menu.with-bank');
   twbm.style.display = 'none';
   for (const c of qsa('.choices', twbm)) {
     c.replaceChildren();
   }
-  qs('.make-trade', twbm).disabled = true;
+}
+ael('.with-bank .close', 'click', hideBankTradeMenu);
+ael('.with-bank .make-trade', 'click', () => {
+  const twbm = qs('.trade-menu.with-bank');
+  const bcl = qs('.make-trade', twbm).classList;
+  if (bcl.contains('unavailable')) {
+    const e = qsa('.selected', twbm).length < 2 ?
+        `Select which resources you want to trade.` :
+        `You can't trade for the same resource type.`;
+    showExplanation(e);
+    return;
+  }
+  const receive =
+      qs('.receive .selected', twbm).dataset.resource;
+  const give = qsa('.give .selected .card', twbm).map(
+    c => c.dataset.name
+  );
+  discard(gso.order[gso.turn], give);
+  gainCard(gso.order[gso.turn], 'resource', receive);
+  gso.bank[receive]--;
+  adjustCards('resource');
+  hideBankTradeMenu();
+});
+
+function showDiscardMenu(color, nToDiscard) {
+  const dm = qs('.discard-menu');
+  dm.dataset.color = color;
+  const db = qs('.discard', dm);
+  db.classList.add('unavailable');
+  const hand = qsa(
+    `.player-area.${color} .hand.resource .card`
+  );
+  const n = nToDiscard ?? Math.floor(hand.length / 2);
+  const nText = numberWords[n] ?? n;
+  qs('h2 span', dm).innerHTML =
+      n === 1 ? 'one card' : `${nText} cards`;
+  for (const c of hand) {
+    const h = document.createElement('div');
+    h.classList.add('hand', 'centered');
+    h.dataset.resource = c.dataset.name;
+    h.append(c.cloneNode(true));
+    ael(h, 'click', () => {
+      h.classList.toggle('selected');
+      db.classList.toggle(
+        'unavailable',
+        qsa('.selected', dm).length !== n
+      );
+    });
+    qs('.choices', dm).append(h);
+  }
+  setTimeout(() => {
+    dm.style.display = 'flex';
+  }, config.delay);
+}
+function hideDiscardMenu() {
+  const dm = qs('.discard-menu');
+  dm.style.display = 'none';
+  delete dm.dataset.color;
+  qs('.choices', dm).replaceChildren();
+  qs('h2 span', dm).innerHTML = 'zero cards';
+}
+ael('.discard-menu .close', 'click', hideDiscardMenu);
+ael('.discard-menu .discard', 'click', () => {
+  const button = qs('.discard-menu .discard');
+  if (button.classList.contains('unavailable')) {
+    showExplanation(
+      `Select the right number of cards to discard.`
+    );
+    return;
+  }
+  const color = qs('.discard-menu').dataset.color;
+  const dArr = qsa('.discard-menu .selected').map(
+    x => x.dataset.resource
+  );
+  hideDiscardMenu();
+  discard(color, dArr);
+});
+function discard(color, cards) {
+  gso.hands[color].resource -= cards.length;
+  const hand =
+      qs(`.player-area.${color} .hand.resource`);
+  for (const card of cards) {
+    gso.hands[color].resource--;
+    if(gso.control[color]) {
+      gsc.hands[color].resource[card]--;
+    }
+    gso.bank[card]++;
+    qs(`.${card}`, hand).remove();
+  }
+  adjustCards('resource');
 }
 
-function chooseDevelopment() {
+ael('.play-development', 'click', () => {
+  const button = qs('.play-development');
+  if (button.classList.contains('unavailable')) {
+    const explanation = gso.playedDevelopmentOnTurn ?
+        `You can play only one development card
+         per turn.` :
+        `You don't have any development cards
+         to play.`;
+    showExplanation(explanation);
+    return;
+  }
   const color = gso.order[gso.turn];
   let sel = `.player-area.${gso.order[gso.turn]}`;
   sel += ' .hand.development .card';
   const card = qs(`${sel}:not(.vp):not(.unripe)`);
-  showCardViewer(card ?? qs(sel), true);
-}
+  showCardViewer(card ?? qs(sel), true);  
+});
 
 function onPort(color) {
   const c = color.substring(0, 1);
@@ -441,7 +684,6 @@ function onPort(color) {
   }
   return result;
 }
-
 function bankTradeChoices(color) {
   const hand = gsc.hands[color].resource;
   const portStatus = onPort(color);
@@ -456,6 +698,85 @@ function bankTradeChoices(color) {
   return result;
 }
 
+function beginBuildFromTurnMenu(type) {
+  const color = gso.order[gso.turn];
+  if (type === 'road') edgesClickable(color);
+  else sitesClickable(color, type);
+  qs('.board').style.zIndex = 2;
+  qs('.confirm-build').dataset.type = type;
+  hideTurnMenu();
+  qs('.my-turn').style.display = 'none';
+  qs('.median .cancel').style.display = 'block';
+}
+for (const type of ['road', 'settlement', 'city']) {
+  const button = qs(`.buy-${type} button`);
+  ael(button, 'click', () => {
+    if (button.classList.contains('unavailable')) {
+      const plural =
+          type === 'city' ? 'cities' : `${type}s`;
+      const explanation =
+          gso.piecesLeft[gso.order[gso.turn]][type] ?
+          `You don't have the resources for a
+           ${type}.` :
+          `You're out of ${plural}.`;
+      showExplanation(explanation);
+      return;
+    }
+    beginBuildFromTurnMenu(type);
+  });
+}
+
+// Add confirm-buy-card dialog
+{
+  const cb = fromTemplate('dialog-confirm-cancel');
+  cb.classList.add('confirm-buy-card');
+  qs('.prompt', cb).innerHTML =
+      fromTemplate('ui-text.confirm-buy-card');
+  const [l, t] = convertCoordinates([0, 0]);
+  cb.style = `--l: ${l}; --t: ${t};`;
+  qs('.board').append(cb);
+}
+
+function drawDevelopmentCard() {
+  gso.developmentsLeft--;
+  return gsu.developmentDeck.pop();
+}
+ael('.buy-development button', 'click', () => {
+  const button = qs('.buy-development button');
+  if (button.classList.contains('unavailable')) {
+    const explanation = gso.developmentsLeft ?
+        `You don't have the resources for
+         a development card.` :
+        `There aren't any development cards left.`
+    showExplanation(explanation);
+    return;
+  }
+  hideTurnMenu();
+  qs('.confirm-buy-card').style.display = 'flex';
+});
+ael('.confirm-buy-card .cancel', 'click', () => {
+  qs('.confirm-buy-card').style.display = 'none';
+  showTurnMenu();
+});
+ael('.confirm-buy-card .confirm', 'click', () => {
+  qs('.confirm-buy-card').style.display = 'none';
+  const color = gso.order[gso.turn];
+  gainCard(color, 'unripe', drawDevelopmentCard());
+  const sel = '.hand.development .card:last-child';
+  const card = qs(`.player-area.${color} ${sel}`);
+  adjustCards('development');
+  showCardViewer(card);
+});
+
+function showExplanation(text) {
+  const explanation = qs('.explanation');
+  qs('.prompt', explanation).innerHTML = text;
+  explanation.style.display = 'flex';
+}
+ael('.explanation button', 'click', () => {
+  qs('.explanation').style.display = 'none';
+});
+
 // Game initialization starts here
 
 // Make and render board
@@ -467,7 +788,10 @@ const robber = draw(seq(board.hexes.length).filter(
 )) ?? -1;
 if (robber > -1) moveRobber(robber);
 
-// Game state objects, overt (gso) and covert (gsc)
+// Game state objects
+// Overt (gso) is known by everyone
+// Covert (gsc) is known only by player in question
+// Unknown (gsu) is known by no one, in principle
 // These will eventually also go in database
 export const gso = {
   setup: 2,
@@ -477,8 +801,11 @@ export const gso = {
   houses: sites.map(s => ''),
   roads: edges.map(e => ''),
   hands: {},
+  piecesLeft: {},
+  bank: {},
 };
-export const gsc = {hands: {},};
+export const gsc = {hands: {}};
+export const gsu = {developmentDeck: []};
 
 // Regulate which user controls which color
 // These will eventually be user ids or something
@@ -501,6 +828,11 @@ for (const c of playerColors) {
     resource: {...rObj},
     development: {...dObj}, unripe: {...dObj},
   };
+}
+
+// Add piece information to game state object
+for (const c of playerColors) {
+  gso.piecesLeft[c] = {...pieceCount};
 }
 
 // Shuffle seating arrangement
@@ -526,18 +858,6 @@ for (const [x, xCost] of Object.entries(cost)) {
   }
 }
 
-// Attach event listeners
-ael('.card-viewer .close', 'click', hideCardViewer);
-ael('.badge-viewer .close', 'click', hideBadgeViewer);
-for (const b of qsa('.player-area .badge')) {
-  ael(b, 'click', () => showBadgeViewer(b));
-}
-ael('.my-turn', 'click', showTurnMenu);
-ael('.turn-menu .close', 'click', hideTurnMenu);
-ael('.play-development', 'click', chooseDevelopment);
-ael('button.with-bank', 'click', showTradeBank);
-ael('.with-bank .close', 'click', hideTradeBank);
-
 // Ensure that no template or modal elements appear
 for (const t of qsa('template, .modal')) {
   t.style.display = 'none';
@@ -549,17 +869,26 @@ while (gso.order[0] !== goesFirst) {
   gso.order.unshift(gso.order.pop());
 }
 
-// ael('.board', 'click', e => console.log(
-//   e.offsetX, e.offsetY
-// ));
+// Create and shuffle development card deck
+gsu.developmentDeck = shuffle(
+  Object.entries(developmentCount).flatMap(
+    a => rep(a[0], a[1])
+  )
+);
+gso.developmentsLeft = gsu.developmentDeck.length;
+
+// Create and stock resource cards in bank
+gso.bank = Object.fromEntries(resources.map(
+  r => [r, resourceCount[r] ?? resourceCount.all]
+));
+
 import {showExampleGame} from './example.js';
 showExampleGame();
 
-// adjustCards('resource');
-// adjustCards('development');
-// adjustCards('played');
+showDiscardMenu('orange');
 
 // nextSetupTurn();
+
 console.log(gso);
 console.log(gsc);
 console.log(board);

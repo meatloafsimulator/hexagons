@@ -2,7 +2,7 @@ import {qs} from './utility.js';
 import {resources} from './constants.js';
 import {
   placeRoad, placeHouse, gainCard, awardBadge,
-  showPlayerName, adjustCards, gso, gsc,
+  showPlayerName, adjustCards, gso, gsc, gsu,
 } from './hexagons.js';
 
 export function showExampleGame() {
@@ -39,13 +39,14 @@ export function showExampleGame() {
   };
   for (const player in cities) {
     for (const c of cities[player]) {
+      placeHouse(player, 'settlement', c);
       placeHouse(player, 'city', c);
     }
   }
 
   const handsR = {
     orange: [2, 1, 1, 2, 3],
-    // orange: [4, 4, 4, 4, 4],
+    // orange: [12, 12, 12, 12, 12],
     blue:   [3, 0, 1, 0, 1],
     white:  [0, 3, 0, 1, 0],
     red:    [0, 0, 2, 3, 0],
@@ -56,6 +57,7 @@ export function showExampleGame() {
     for (const [i, r] of resources.entries()) {
       const n = hand[i];
       for (let j = 0; j < n; j++) {
+        gso.bank[r]--;
         const cardName = gso.control[color] ? r : '';
         gainCard(color, 'resource', cardName);
       }
@@ -63,10 +65,10 @@ export function showExampleGame() {
   }
 
   const handsD = {
-    orange: ['knight', 'vp-palace', 'vp-university'],
-    blue: ['vp-market'],
+    orange: ['knight', 'palace', 'university'],
+    blue: ['market'],
     white: ['knight', 'knight'],
-    red: ['knight', 'knight', 'knight', 'vp-library'],
+    red: ['knight', 'knight', 'knight', 'library'],
   };
   for (
     const [color, hand] of Object.entries(handsD)
@@ -105,7 +107,8 @@ export function showExampleGame() {
     }
   }
   
-  const remainingD = ['knight', 'vp-chapel'];
+  gsu.developmentDeck = ['knight', 'chapel'];
+  gso.developmentsLeft = gsu.developmentDeck.length;
 
   awardBadge('largest-army', 'orange');
   awardBadge('longest-road', 'blue');

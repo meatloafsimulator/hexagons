@@ -1,14 +1,15 @@
 :root {
-  --color-bg: #97999c;
   --color-fg: #000;
-  --color-blur: #aaaa;
+  --color-bg:   #97999c;
+  --color-blur: #97999caa;
   --color-gold: #f2a900;
+  --color-hover: #fffa;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #4c4e51;
     --color-fg: #fff;
-    --color-blur: #555a;
+    --color-bg:   #4c4e51;
+    --color-blur: #4c4e51aa;
   }
   .board,
   .side-zone,
@@ -40,6 +41,7 @@ body {
   width:  100vw;
   background: var(--color-blur);
   backdrop-filter: blur(10px);
+  flex-direction: column;
 }
 
 button {
@@ -58,11 +60,18 @@ button {
 button.primary {
   background: var(--color-gold);
 }
-button:disabled {
+button.cancel {
+  background: #ec6f7a;
+}
+button.confirm {
+  background: #6cb088;
+}
+button.unavailable {
   border: none;
   background: none;
   color: inherit;
   cursor: not-allowed;
+/*  text-decoration: line-through;*/
 }
 
 h1 {

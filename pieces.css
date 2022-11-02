@@ -29,10 +29,11 @@
   background: none;
   border: none;
 }
-.road.invisible:hover {
-  background: #0006;
+.road.invisible:is(:hover, .selected) {
+  background: var(--color-hover);
   border-radius: 12px;
   z-index: 2;
+  cursor: pointer;
 }
 .piece:not(.road) {
   z-index: 1;
@@ -58,6 +59,7 @@
   --h: 48px;
   --w: 48px;
 }
-.site:hover {
-  background: #0006;
+.site:is(:hover, .selected) {
+  background: var(--color-hover);
+  cursor: pointer;
 }

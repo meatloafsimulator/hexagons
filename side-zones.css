@@ -87,6 +87,9 @@
   width: 140px;
   margin: 0;
 }
+.median .cancel {
+  display: none;
+}
 
 /* For hands and cards, see cards.css */
 

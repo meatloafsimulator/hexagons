@@ -16,17 +16,26 @@ export const cost = {
 export const exchangeRate = {
   portSpecific: 2, portGeneric: 3, general: 4,
 };
+export const resourceCount = {all: 19};
 export const developmentCount = {
   'knight': 14,
   'monopoly': 2,
   'road-building': 2,
   'year-of-plenty': 2,
-  'vp-chapel': 1,
-  'vp-library': 1,
-  'vp-market': 1,
-  'vp-palace': 1,
-  'vp-university': 1,  
+  'chapel': 1,
+  'library': 1,
+  'market': 1,
+  'palace': 1,
+  'university': 1,  
 };
+export const vpCards = [
+  'chapel', 'library', 'market',
+  'palace', 'university',
+];
+export const numberWords = [
+  'zero', 'one', 'two', 'three', 'four',
+  'five', 'six', 'seven', 'eight', 'nine',
+];
 export const config = {
   delay: 103,
 };

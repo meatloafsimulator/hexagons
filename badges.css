@@ -46,9 +46,6 @@
   display: none;
 }
 
-.badge-viewer {
-  flex-direction: column;
-}
 .badge-viewer .badge {
   height: 378px;
   width: 486px;
