@@ -74,6 +74,25 @@
   display: none;  
 }
 
+.played-marker {
+  display: none;
+  position: absolute;
+  height: calc(var(--w) * 4 / 3);
+  width: calc(var(--w) * 5 / 6);
+  z-index: 1;
+}
+.played-marker span {
+  display: none;
+}
+.played-marker svg {
+  stroke: #333a;
+  stroke-width: 0.5;
+  stroke-linecap: round;
+}
+.played .played-marker {
+  display: block;
+}
+
 .player-area .hand {
   height: 40px;
 }
@@ -90,7 +109,7 @@
 }
 
 .card-viewer .hand {
-  width: 1000px;
+  width: var(--width-game-area);
   max-height: 168px;
   flex-wrap: wrap;
   z-index: 1;
@@ -116,10 +135,29 @@
   justify-content: space-evenly;
 }
 .card-viewer .zoomed .icon img {
-  width: 144px;
+  width: calc(var(--w) * 4 / 9);
 }
 .card-viewer button.play {
   display: none;
+}
+.card-viewer .zoomed .played-marker {
+  height: calc(var(--w) * 4 / 9);
+  width: calc(var(--w) * 4 / 3);
+  text-align: center;
+  line-height: 144px;
+}
+.card-viewer .zoomed .played-marker svg {
+  display: none;
+}
+.card-viewer .zoomed .played-marker span {
+  display: block;
+  position: absolute;
+  width: 100%;
+  text-transform: uppercase;
+  font-size: 96px;
+  font-weight: bold;
+  color: #333a;
+  transform: rotate(32deg);
 }
 
 .trade-menu .hand {
@@ -136,30 +174,33 @@
   outline: solid 6px var(--color-gold);
 }
 
-.discard-menu h2 {
+.card-select h2 {
   margin: 12px;
 }
-.discard-menu h2 span {
+.card-select h2 span {
   text-transform: capitalize;
 }
-.discard-menu .choices {
-  width: 1000px;
+.card-select .choices {
+  width: var(--width-game-area);
   flex-wrap: wrap;
 }
-.discard-menu .hand {
+.card-select .hand {
   padding: 8px;
   margin: 16px;
   border-radius: 6px;
   cursor: pointer;
 }
-.discard-menu .card {
+.card-select .card {
   --w: 48px;
 }
-.discard-menu .selected {
+.card-select .selected {
   outline: solid 6px var(--color-gold);
+}
+.card-select .note {
+  margin-bottom: 24px;
 }
 
 .hand.unavailable {
-  opacity: 0.4;
+  opacity: 0.2;
   cursor: not-allowed;
 }

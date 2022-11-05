@@ -45,8 +45,8 @@ export function showExampleGame() {
   }
 
   const handsR = {
-    orange: [2, 1, 1, 2, 3],
-    // orange: [12, 12, 12, 12, 12],
+    // orange: [2, 1, 1, 2, 3],
+    orange: [16, 12, 12, 12, 17],
     blue:   [3, 0, 1, 0, 1],
     white:  [0, 3, 0, 1, 0],
     red:    [0, 0, 2, 3, 0],
@@ -65,7 +65,10 @@ export function showExampleGame() {
   }
 
   const handsD = {
-    orange: ['knight', 'palace', 'university'],
+    orange: [
+      'knight', 'palace',
+      'monopoly',  'year-of-plenty',
+    ],
     blue: ['market'],
     white: ['knight', 'knight'],
     red: ['knight', 'knight', 'knight', 'library'],
@@ -80,7 +83,7 @@ export function showExampleGame() {
   }
 
   const unripeD = {
-    orange: ['year-of-plenty'],
+    orange: ['university'],
   };
   for (
     const [color, arr] of Object.entries(unripeD)
@@ -92,8 +95,7 @@ export function showExampleGame() {
 
   const playedD = {
     orange: [
-      'knight', 'knight', 'knight',
-      'road-building', 'monopoly',
+      'knight', 'knight', 'knight', 'road-building',
     ],
     blue: ['knight', 'road-building'],
     white: ['knight', 'year-of-plenty'],

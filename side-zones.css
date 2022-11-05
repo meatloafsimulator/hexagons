@@ -87,7 +87,7 @@
   width: 140px;
   margin: 0;
 }
-.median .cancel {
+.median :is(.cancel, .discard) {
   display: none;
 }
 

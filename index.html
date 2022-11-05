@@ -13,8 +13,11 @@
 <h1>Settlers of Catan</h1>
 <section class="side-zone left">
   <section class="median">
-    <button type="button" class="primary my-turn">
+    <button type="button" class="my-turn primary">
       My Turn
+    </button>
+    <button type="button" class="discard primary">
+      Discard
     </button>
     <button type="button" class="cancel">
       Cancel
@@ -24,23 +27,6 @@
 <section class="board">
   <svg></svg>
   <div class="on-board"></div>
-  <!-- <div class="confirm-build centered">
-    <div class="prompt">Build here?</div>
-    <div class="choices centered">
-      <button type="button" class="cancel centered">
-        <svg viewbox="0 0 12 12">
-          <line x1="3" y1="3" x2="9" y2="9"/>
-          <line x1="3" y1="9" x2="9" y2="3"/>
-        </svg>
-      </button>
-      <button type="button" class="confirm centered">
-        <svg viewbox="0 0 12 12">
-          <line x1="2" y1="7" x2="5" y2="10"/>
-          <line x1="5" y1="10" x2="10" y2="2"/>
-        </svg>
-      </button>
-    </div>
-  </div> -->
 </section>
 <section class="side-zone right">
   <section class="median">
@@ -49,24 +35,27 @@
     </button>
   </section>
 </section>
-<section class="card-viewer modal centered">
+<section class="card-viewer modal">
   <div class="hand centered"></div>
   <div class="zoomed"></div>
   <div>
-    <button type="button" class="primary play">
-      Play This Card
-    </button>
     <button type="button" class="close">
       Return to Game
     </button>
+    <button type="button" class="cancel">
+      Cancel
+    </button>
+    <button type="button" class="play confirm">
+      Play This Card
+    </button>
   </div>
 </section>
-<section class="badge-viewer modal centered">
+<section class="badge-viewer modal">
   <button type="button" class="close">
     Return to Game
   </button>
 </section>
-<section class="turn-menu modal centered">
+<section class="turn-menu modal">
   <section class="initial-phase centered">
     <h2>Start Turn</h2>
     <div class="choices centered">
@@ -123,7 +112,7 @@
     </div>
   </section>
 </section>
-<section class="trade-menu with-bank modal centered">
+<section class="trade-menu with-bank modal">
   <section class="give centered">
     <h2>Give to Bank</h2>
     <div class="choices centered"></div>
@@ -136,39 +125,60 @@
     </div>
   </section>
   <div>
-    <button type="button" class="make-trade">
+    <button type="button" class="close cancel">
+      Cancel
+    </button>
+    <button type="button" class="make-trade confirm">
       Make Trade
     </button>
-    <button type="button" class="close">
-      Return to Game
-    </button>
   </div>
 </section>
-<section class="discard-menu modal centered">
-  <h2>Choose <span>0 Cards</span> to Discard</h2>
+<section class="acquire-cards modal">
+  <div class="top centered"></div>
+  <h2>Resource Cards Taken</h2>
+  <div class="bottom centered"></div>
+</section>
+<section class="discard-menu card-select modal">
+  <h2>Choose <span>Zero Cards</span> to Discard</h2>
   <div class="choices centered"></div>
   <div>
-    <button type="button" class="discard">
-      Discard Cards
+    <button type="button" class="close cancel">
+      Hide Menu
     </button>
-    <button type="button" class="close">
-      Return to Game
+    <button type="button" class="discard confirm">
+      Discard Cards
     </button>
   </div>
 </section>
-<section class="year-of-plenty-menu modal centered">
-  <h2>Choose Any Two Resource Cards</h2>
+<section class="yop-menu card-select modal">
+  <h2>Choose Any <span>Zero Cards</span> to Take</h2>
+  <div class="choices centered"></div>
+  <div class="note">
+    The bank is out (or almost out)
+    of one or more resource types.
+  </div>
+  <div>
+    <button type="button" class="cancel">
+      Cancel
+    </button>
+    <button type="button" class="confirm">
+      Take Cards
+    </button>
+  </div>
+</section>
+<section class="monopoly-menu card-select modal">
+  <h2>Choose a Resource Type to Monopolize</h2>
   <div class="choices centered"></div>
   <div>
     <button type="button" class="cancel">
-      Cancel Playing Card
+      Cancel
     </button>
     <button type="button" class="confirm">
-      Take These Resources
+      Confirm
     </button>
   </div>
 </section>
-<section class="explanation modal centered">
+<section class="explanation modal">
   <div class="prompt">
     Here is why you can't do the thing.
   </div>
@@ -221,6 +231,13 @@
     <div class="badges"></div>
   </section>
 </template>
+<template class="acquire-cards-quadrant">
+  <section class="quadrant centered">
+    <div class="hand">Card Card</div>
+    <div class="color-indicator"></div>
+    <div class="username"></div>
+  </section>
+</template>
 <template class="badge">
   <div class="badge centered">
     <h2></h2>
@@ -247,6 +264,12 @@
       <h2></h2>
       <div class="icon centered"><img></div>
       <p></p>
+      <div class="played-marker">
+        <span>played</span>
+        <svg viewbox="0 0 5 8">
+          <line x1="0" y1="0" x2="5" y2="8"/>
+        </svg>
+      </div>
     </div>
     <div class="face back"></div>
   </div>

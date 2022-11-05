@@ -38,8 +38,9 @@ function makePlayerArea(i, color) {
   }
 }
 export function showPlayerName(color, username) {
-  const pn = qs(`.player-area.${color} .username`);
-  pn.innerHTML = username;
+  for (const x of qsa(`.${color} .username`)) {
+    x.innerHTML = username;    
+  }
 }
 
 function moveRobber(hex) {
@@ -118,6 +119,7 @@ export function gainCard(color, loc, cardName) {
   const card = makeCard(kind, cardName);
   ael(card, 'click', () => showCardViewer(card));
   if (loc === 'unripe') card.classList.add('unripe');
+  if (loc === 'played') card.classList.add('played');
   const hand = loc === 'unripe' ? 'development' : loc;
   const sel = `.player-area.${color} .hand.${hand}`;
   qs(sel).append(card);
@@ -145,6 +147,9 @@ function makeCardPlayed(color, cardName) {
   gso.hands[color].played[cardName]++;
   if (! gso.control[color]) return;
   gsc.hands[color].development[cardName]--;
+  
+  // Development card has now been played on turn
+  gso.playedDevelopmentOnTurn = true;
 
 }
 function gainStartingHand(color, site) {
@@ -351,7 +356,7 @@ function payCost(color, type) {
   discard(color, payment);
 }
 
-function showCardViewer(card, showPlayButton) {
+function showCardViewer(card, playing) {
   const cv = qs('.card-viewer');
   const cvHand = qs('.hand', cv);
   const paHand = card.parentElement;
@@ -362,14 +367,18 @@ function showCardViewer(card, showPlayButton) {
     cvHand.append(cNew);
   }
   qs('.zoomed', cv).append(enlargeCard(card));
-  const playButton = qs('.play', cv);
-  playButton.style.display =
-      showPlayButton ? 'inline' : 'none';
-  playButton.classList.toggle(
-    'unavailable',
-    card.classList.contains('vp') ||
-        card.classList.contains('unripe')
-  );
+  for (const b of qsa('button', cv)) {
+    b.style.display = 'none';
+  }
+  if (playing) {
+    qs('.cancel', cv).style.display = 'inline';
+    qs('.play', cv).style.display = 'inline';
+    qs('.play', cv).classList.toggle(
+      'unavailable',
+      card.classList.contains('vp') ||
+          card.classList.contains('unripe')
+    );
+  } else qs('.close', cv).style.display = 'inline';
   setTimeout(() => {
     hideTurnMenu();
     cv.style.display = 'flex';
@@ -382,6 +391,7 @@ function hideCardViewer() {
   qs('.zoomed', cv).replaceChildren();  
 }
 ael('.card-viewer .close', 'click', hideCardViewer);
+ael('.card-viewer .cancel', 'click', hideCardViewer);
 ael('.card-viewer .play', 'click', () => {
   const cv = qs('.card-viewer');
   const card = qs('.selected', cv);
@@ -400,9 +410,7 @@ ael('.card-viewer .play', 'click', () => {
     );
     return;
   }
-  const cardName = card.dataset.name;
-  hideCardViewer();
-  const color = gso.order[gso.turn];
+  playDevelopmentCard(card.dataset.name);
 });
 function swapCardViewer(card) {
   const cv = qs('.card-viewer');
@@ -612,6 +620,11 @@ function showDiscardMenu(color, nToDiscard) {
   }
   setTimeout(() => {
     dm.style.display = 'flex';
+    qs('.median .my-turn').style.display = 'none';
+    const medianDiscard = qs('.median .discard');
+    medianDiscard.style.display = 'block';
+    medianDiscard.dataset.color = color;
+    medianDiscard.dataset.n = n;
   }, config.delay);
 }
 function hideDiscardMenu() {
@@ -635,6 +648,10 @@ ael('.discard-menu .discard', 'click', () => {
     x => x.dataset.resource
   );
   hideDiscardMenu();
+  qs('.median .discard').style.display = 'none';
+  if (gso.control[gso.order[gso.turn]]) {
+    qs('.my-turn').style.display = 'block';
+  }
   discard(color, dArr);
 });
 function discard(color, cards) {
@@ -651,6 +668,11 @@ function discard(color, cards) {
   }
   adjustCards('resource');
 }
+ael('.median .discard', 'click', () => {
+  const button = qs('.median .discard');
+  const {color, n} = button.dataset;
+  showDiscardMenu(color, +n);
+});
 
 ael('.play-development', 'click', () => {
   const button = qs('.play-development');
@@ -768,6 +790,111 @@ ael('.confirm-buy-card .confirm', 'click', () => {
   showCardViewer(card);
 });
 
+function playDevelopmentCard(cardName) {
+  if (cardName === 'year-of-plenty') {
+    const nCards = 2;
+    const yopm = qs('.yop-menu');
+    qs('.note', yopm).style.display = 'none';
+    const cb = qs('.confirm', yopm);
+    cb.classList.add('unavailable');
+    const nText = numberWords[nCards] ?? nCards;
+    qs('h2 span', yopm).innerHTML =
+        nCards === 1 ? 'one card' : `${nText} cards`;
+    for (const r of resources) {
+      for (let i = 0; i < nCards; i++) {
+        const h = document.createElement('div');
+        h.classList.add('hand', 'centered');
+        h.dataset.resource = r;
+        if (i >= gso.bank[r]) {
+          h.classList.add('unavailable');
+          qs('.note', yopm).style.display = 'block';
+        }
+        h.append(makeCard('resource', r));
+        ael(h, 'click', () => {
+          const hcl = h.classList;
+          if (hcl.contains('unavailable')) return;
+          hcl.toggle('selected');
+          cb.classList.toggle(
+            'unavailable',
+            qsa('.selected', yopm).length !== nCards
+          );
+        });
+        qs('.choices', yopm).append(h);
+      }
+    }
+    function hideThis() {
+      yopm.style.display = 'none';
+      qs('.choices', yopm).replaceChildren();
+      qs('h2 span', yopm).innerHTML = 'zero cards';
+    }
+    ael(qs('.cancel', yopm), 'click', hideThis);
+    ael(cb, 'click', () => {
+      if (cb.classList.contains('unavailable')) {
+        showExplanation(
+          `Select the right number of cards to take.`
+        );
+        return;
+      }
+      const color = gso.order[gso.turn];
+      for (const h of qsa('.selected', yopm)) {
+        const r = h.dataset.resource;
+        gso.bank[r]--;
+        gainCard(color, 'resource', r);
+      }
+      hideThis();
+      adjustCards('resource');
+      makeCardPlayed(color, 'year-of-plenty');
+    });
+    setTimeout(() => {
+      hideCardViewer();
+      yopm.style.display = 'flex';
+    }, config.delay);
+  }
+  if (cardName === 'monopoly') {
+    const mm = qs('.monopoly-menu');
+    const cb = qs('.confirm', mm);
+    cb.classList.add('unavailable');
+    for (const r of resources) {
+      const h = document.createElement('div');
+      h.classList.add('hand', 'centered');
+      h.dataset.resource = r;
+      h.append(makeCard('resource', r));
+      ael(h, 'click', () => {
+        const previous = qs('.selected', mm);
+        previous?.classList.remove('selected');
+        h.classList.add('selected');
+        cb.classList.remove('unavailable');
+      });
+      qs('.choices', mm).append(h);
+    }
+    function hideThis() {
+      mm.style.display = 'none';
+      qs('.choices', mm).replaceChildren();
+    }
+    ael(qs('.cancel', mm), 'click', hideThis);
+    ael(cb, 'click', () => {
+      if (cb.classList.contains('unavailable')) {
+        showExplanation(
+          `Choose a resource type to monopolize.`
+        );
+        return;
+      }
+      const color = gso.order[gso.turn];
+      for (const c of playerColors) {
+        if (c === color) continue;
+        
+      }
+      hideThis();
+      adjustCards('resource');
+      makeCardPlayed(color, 'monopoly');
+    });
+    setTimeout(() => {
+      hideCardViewer();
+      mm.style.display = 'flex';
+    }, config.delay);
+  }
+}
+
 function showExplanation(text) {
   const explanation = qs('.explanation');
   qs('.prompt', explanation).innerHTML = text;
@@ -806,6 +933,11 @@ export const gso = {
 };
 export const gsc = {hands: {}};
 export const gsu = {developmentDeck: []};
+
+// Game state object showing knowledge by each player
+export const gs = {
+  
+};
 
 // Regulate which user controls which color
 // These will eventually be user ids or something
@@ -848,6 +980,23 @@ for (const [i, color] of gso.order.entries()) {
   showPlayerName(color, 'Anonymous');
 }
 
+// Make player quadrants on acquire-cards screen
+for (const area of qsa('section.player-area')) {
+  const s = fromTemplate('acquire-cards-quadrant');
+  for (const color of playerColors) {
+    s.classList.toggle(
+      color, area.classList.contains(color)
+    );
+  }
+  qs('.username', s).innerHTML =
+      qs('.username', area).innerHTML;
+  const xpend = area.classList.contains('left') ?
+      'prepend' : 'append';
+  const where = area.classList.contains('top') ?
+      'top' : 'bottom';
+  qs(`.acquire-cards .${where}`)[xpend](s);
+}
+
 // Add costs to turn menu
 for (const [x, xCost] of Object.entries(cost)) {
   const costDiv = qs(`.buy-${x} .cost`);
@@ -885,10 +1034,10 @@ gso.bank = Object.fromEntries(resources.map(
 import {showExampleGame} from './example.js';
 showExampleGame();
 
-showDiscardMenu('orange');
+// showDiscardMenu('orange');
 
 // nextSetupTurn();
 
 console.log(gso);
 console.log(gsc);
-console.log(board);
+console.log(gsu);

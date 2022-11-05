@@ -95,3 +95,27 @@
   max-width: 600px;
   margin: 20px;
 }
+
+.modal.acquire-cards {
+  justify-content: space-evenly;
+}
+.modal.acquire-cards :is(.top, .bottom) {
+  width: var(--width-game-area);
+  justify-content: space-around;
+  font-size: 25px;
+}
+.modal.acquire-cards .quadrant {
+  width: calc(var(--width-game-area) / 2);
+  flex-direction: column;
+}
+.modal.acquire-cards .bottom .quadrant {
+  flex-direction: column-reverse;
+}
+.modal.acquire-cards .color-indicator {
+  box-sizing: border-box;
+  height: 12px;
+  width: 120px;
+  background: var(--color-player);
+  border: solid 1.5px #000;
+  margin: 12px;
+}

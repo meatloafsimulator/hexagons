@@ -4,6 +4,7 @@
   --color-blur: #97999caa;
   --color-gold: #f2a900;
   --color-hover: #fffa;
+  --width-game-area: 1000px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -34,7 +35,6 @@ body {
 }
 
 .modal {
-  display: none;
   position: fixed;
   z-index: 3;
   height: 100vh;
@@ -57,13 +57,10 @@ button {
   width: 228px;
   margin: 12px;
 }
-button.primary {
-  background: var(--color-gold);
-}
 button.cancel {
   background: #ec6f7a;
 }
-button.confirm {
+button:is(.confirm, .primary) {
   background: #6cb088;
 }
 button.unavailable {
@@ -92,7 +89,8 @@ p.vp {
   background: var(--color-vp-bg, none);
 }
 
-.centered {
+.centered,
+.modal {
   display: flex;
   justify-content: center;
   align-items: center;
