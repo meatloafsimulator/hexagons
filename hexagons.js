@@ -69,19 +69,19 @@ export function placeHouse(color, type, site) {
   if (type === 'city') {
     c = c.toUpperCase();
     stockHouse(color, 'settlement');
-    gso.piecesLeft[color].settlement++;
+    gs.piecesLeft[color].settlement++;
   }
-  gso.houses[site] = c;
-  gso.piecesLeft[color][type]--;
-  if (gso.setup === 1) gainStartingHand(color, site);
+  gs.houses[site] = c;
+  gs.piecesLeft[color][type]--;
+  if (gs.setup === 1) gainStartingHand(color, site);
 }
 export function placeRoad(color, edge) {
   qs(`.player-area.${color} .road`).remove();
   const e = qs(`.road.edge-${edge}`);
   e.classList.remove('invisible');
   e.classList.add(color);
-  gso.roads[edge] = color.substring(0, 1);
-  gso.piecesLeft[color].road--;
+  gs.roads[edge] = color.substring(0, 1);
+  gs.piecesLeft[color].road--;
 }
 
 function stockHouse(color, type) {
@@ -126,15 +126,18 @@ export function gainCard(color, loc, cardName) {
 
   // Add card in game state
   if (loc === 'played') {
-    gso.hands[color][loc][cardName]++;
+    gs.playedCards[color][cardName]++;
     return;
   }
-  gso.hands[color][loc]++;
-  if (! gso.control[color]) return;
-  gsc.hands[color][loc][cardName]++;
+  gs.nCards[color][loc]++;
+  if (! gs.control[color]) return;
+  gs.hands[color][loc][cardName]++;
 
 }
 function makeCardPlayed(color, cardName) {
+
+  // Development card has now been played on turn
+  gs.playedDevelopmentOnTurn = true;
 
   // Move card visually
   const sel = `.player-area.${color} .hand.development
@@ -143,14 +146,11 @@ function makeCardPlayed(color, cardName) {
   gainCard(color, 'played', cardName);
   
   // Move card in game state
-  gso.hands[color].development--;
-  gso.hands[color].played[cardName]++;
-  if (! gso.control[color]) return;
-  gsc.hands[color].development[cardName]--;
+  gs.nCards[color].development--;
+  gs.playedCards[color][cardName]++;
+  if (! gs.control[color]) return;
+  gs.hands[color].development[cardName]--;
   
-  // Development card has now been played on turn
-  gso.playedDevelopmentOnTurn = true;
-
 }
 function gainStartingHand(color, site) {
   const adjacentHexes = board.hexes.filter(
@@ -217,25 +217,25 @@ export function awardBadge(type, color) {
 }
 
 function okRoad(color, edge) {
-  if (gso.roads[edge]) return false;
+  if (gs.roads[edge]) return false;
   const s = edges[edge];
-  const h = s.map(x => gso.houses[x].toLowerCase());
+  const h = s.map(x => gs.houses[x].toLowerCase());
   const c = color.substring(0, 1);
   if (h.includes(c)) return true;
   const rTo = s.map(x => edges.some(
-    (e, i) => e.includes(x) && gso.roads[i] === c
+    (e, i) => e.includes(x) && gs.roads[i] === c
   ));
   return rTo.some((e, i) => e && ! h[i]);
 }
 function okHouse(color, type, site) {
   const c = color.substring(0, 1);
-  if (type === 'city') return gso.houses[site] === c;
-  if (gso.houses[site]) return false;
+  if (type === 'city') return gs.houses[site] === c;
+  if (gs.houses[site]) return false;
   const nbs = neighbors[site];
-  if (nbs.some(x => gso.houses[x])) return false;
-  if (gso.setup) return true;
+  if (nbs.some(x => gs.houses[x])) return false;
+  if (gs.setup) return true;
   return edges.some(
-    (e, i) => e.includes(site) && gso.roads[i] === c
+    (e, i) => e.includes(site) && gs.roads[i] === c
   );
 }
 
@@ -254,21 +254,24 @@ function sitesClickable(color, type) {
   }
 }
 
+function colorOnTurn() {
+  return gs.order[gs.turn];
+}
 function nextSetupTurn() {
   const cb = qs('.confirm-build');
-  if (gso.setup === 2) gso.turn++; else gso.turn--;
-  if (gso.turn === gso.order.length) {
-    gso.setup--;
-    gso.turn--;
-  } else if (gso.turn === -1) {
-    gso.setup--;
-    gso.turn++;
+  if (gs.setup === 2) gs.turn++; else gs.turn--;
+  if (gs.turn === gs.order.length) {
+    gs.setup--;
+    gs.turn--;
+  } else if (gs.turn === -1) {
+    gs.setup--;
+    gs.turn++;
     qs('.board').style.zIndex = 0;
     nextTurn();
     cb.dataset.free = false;
     return;
   }
-  sitesClickable(gso.order[gso.turn], 'settlement');
+  sitesClickable(colorOnTurn(), 'settlement');
   cb.dataset.type = 'settlement';
   cb.dataset.free = true;
   qs('.board').style.zIndex = 2;
@@ -315,8 +318,8 @@ ael('.confirm-build .cancel', 'click', () => {
   qs('.selected').classList.remove('selected');
   cb.style.display = 'none';
   qs('.board').style.zIndex = 0;
-  if (gso.setup) {
-    const color = gso.order[gso.turn];
+  if (gs.setup) {
+    const color = colorOnTurn();
     if (cb.dataset.type === 'road') {
       edgesClickable(color);
     } else sitesClickable(color, 'settlement');
@@ -326,7 +329,7 @@ ael('.confirm-build .cancel', 'click', () => {
   showTurnMenu();
 });
 ael('.confirm-build .confirm', 'click', () => {
-  const color = gso.order[gso.turn];
+  const color = colorOnTurn();
   const cb = qs('.confirm-build');
   const {type, loc, free} = cb.dataset;
   qs('.selected').classList.remove('selected');
@@ -335,22 +338,22 @@ ael('.confirm-build .confirm', 'click', () => {
   if (! free) payCost(color, type);
   if (type === 'road') {
     placeRoad(color, loc);
-    if (gso.setup) nextSetupTurn();
+    if (gs.setup) nextSetupTurn();
   } else {
     placeHouse(color, type, loc);
-    if (gso.setup) {
+    if (gs.setup) {
       edgesClickable(color);
       cb.dataset.type = 'road';
     }    
   }
-  if (gso.setup) return;
+  if (gs.setup) return;
   qs('.my-turn').style.display = 'block';
 });
 
 function payCost(color, type) {
   const payment = [];
   for (const [r, n] of Object.entries(cost[type])) {
-    const c = gso.control[color] ? r : 'unknown';
+    const c = gs.control[color] ? r : 'unknown';
     for (let i = 0; i < n; i++) payment.push(c);
   }
   discard(color, payment);
@@ -474,9 +477,9 @@ function enlargeBadge(badge) {
 
 function showTurnMenu() {
   const tm = qs('.turn-menu');
-  // tm.classList.toggle('before-roll', ! gso.roll);
-  const color = gso.order[gso.turn];
-  const rHand = gsc.hands[color].resource;
+  // tm.classList.toggle('before-roll', ! gs.roll);
+  const color = colorOnTurn();
+  const rHand = gs.hands[color].resource;
   for (const [x, xCost] of Object.entries(cost)) {
     let afford = true;
     for (const [r, n] of Object.entries(xCost)) {
@@ -484,15 +487,15 @@ function showTurnMenu() {
     }
     const button = qs(`.buy-${x} button`, tm);
     button.classList.toggle('unavailable', ! afford);
-    const left = gso.piecesLeft[color][x] ?? 
-        gso.developmentsLeft;
+    const left = gs.piecesLeft[color][x] ?? 
+        gs.developmentsLeft;
     if (! left) button.classList.add('unavailable');
   }
-  const nCards = gso.hands[color];
+  const {development: nD, unripe: nU} =
+      gs.nCards[color];
   qs('.play-development', tm).classList.toggle(
     'unavailable',
-    gso.playedDevelopmentOnTurn ||
-    ! (nCards.development + nCards.unripe)
+    gs.playedDevelopmentOnTurn || ! (nD + nU)
   );
   qs('.with-bank', tm).classList.toggle(
     'unavailable',
@@ -521,7 +524,7 @@ ael('button.with-bank', 'click', () => {
   const mtbcl = qs('.make-trade', twbm).classList;
   mtbcl.add('unavailable');
   qs('.note', twbm).style.display = 'none';
-  const color = gso.order[gso.turn];
+  const color = colorOnTurn();
   const choicesObj = bankTradeChoices(color);
   const cReceive = qs('.receive .choices', twbm);
   const cGive = qs('.give .choices', twbm);
@@ -530,7 +533,7 @@ ael('button.with-bank', 'click', () => {
     hReceive.classList.add('hand', 'centered');
     hReceive.dataset.resource = r;
     const hGive = hReceive.cloneNode(true);
-    if(! gso.bank[r]) {
+    if(! gs.bank[r]) {
       hReceive.classList.add('unavailable');
       qs('.note', twbm).style.display = 'block';
     }
@@ -585,9 +588,10 @@ ael('.with-bank .make-trade', 'click', () => {
   const give = qsa('.give .selected .card', twbm).map(
     c => c.dataset.name
   );
-  discard(gso.order[gso.turn], give);
-  gainCard(gso.order[gso.turn], 'resource', receive);
-  gso.bank[receive]--;
+  const color = colorOnTurn();
+  discard(color, give);
+  gainCard(color, 'resource', receive);
+  gs.bank[receive]--;
   adjustCards('resource');
   hideBankTradeMenu();
 });
@@ -649,21 +653,20 @@ ael('.discard-menu .discard', 'click', () => {
   );
   hideDiscardMenu();
   qs('.median .discard').style.display = 'none';
-  if (gso.control[gso.order[gso.turn]]) {
+  if (gs.control[colorOnTurn()]) {
     qs('.my-turn').style.display = 'block';
   }
   discard(color, dArr);
 });
 function discard(color, cards) {
-  gso.hands[color].resource -= cards.length;
   const hand =
       qs(`.player-area.${color} .hand.resource`);
   for (const card of cards) {
-    gso.hands[color].resource--;
-    if(gso.control[color]) {
-      gsc.hands[color].resource[card]--;
+    gs.nCards[color].resource--;
+    if(gs.control[color]) {
+      gs.hands[color].resource[card]--;
     }
-    gso.bank[card]++;
+    gs.bank[card]++;
     qs(`.${card}`, hand).remove();
   }
   adjustCards('resource');
@@ -677,16 +680,14 @@ ael('.median .discard', 'click', () => {
 ael('.play-development', 'click', () => {
   const button = qs('.play-development');
   if (button.classList.contains('unavailable')) {
-    const explanation = gso.playedDevelopmentOnTurn ?
-        `You can play only one development card
-         per turn.` :
-        `You don't have any development cards
-         to play.`;
+    const d = 'development card';
+    const explanation = gs.playedDevelopmentOnTurn ?
+        `You can play only one ${d} per turn.` :
+        `You don't have any ${d}s to play.`;
     showExplanation(explanation);
     return;
   }
-  const color = gso.order[gso.turn];
-  let sel = `.player-area.${gso.order[gso.turn]}`;
+  let sel = `.player-area.${colorOnTurn()}`;
   sel += ' .hand.development .card';
   const card = qs(`${sel}:not(.vp):not(.unripe)`);
   showCardViewer(card ?? qs(sel), true);  
@@ -700,14 +701,14 @@ function onPort(color) {
     const coastCycle = [...coast, coast[0]];
     const portSites = coastCycle.slice(i, i + 2);
     for (const s of portSites) {
-      const h = gso.houses[s].toLowerCase();
+      const h = gs.houses[s].toLowerCase();
       if (h === c) result[port] = true;
     }
   }
   return result;
 }
 function bankTradeChoices(color) {
-  const hand = gsc.hands[color].resource;
+  const hand = gs.hands[color].resource;
   const portStatus = onPort(color);
   const result = {};
   for (const [r, n] of Object.entries(hand)) {
@@ -721,7 +722,7 @@ function bankTradeChoices(color) {
 }
 
 function beginBuildFromTurnMenu(type) {
-  const color = gso.order[gso.turn];
+  const color = colorOnTurn();
   if (type === 'road') edgesClickable(color);
   else sitesClickable(color, type);
   qs('.board').style.zIndex = 2;
@@ -737,7 +738,7 @@ for (const type of ['road', 'settlement', 'city']) {
       const plural =
           type === 'city' ? 'cities' : `${type}s`;
       const explanation =
-          gso.piecesLeft[gso.order[gso.turn]][type] ?
+          gs.piecesLeft[colorOnTurn()][type] ?
           `You don't have the resources for a
            ${type}.` :
           `You're out of ${plural}.`;
@@ -760,13 +761,13 @@ for (const type of ['road', 'settlement', 'city']) {
 }
 
 function drawDevelopmentCard() {
-  gso.developmentsLeft--;
-  return gsu.developmentDeck.pop();
+  gs.developmentsLeft--;
+  return gs.developmentDeck.pop();
 }
 ael('.buy-development button', 'click', () => {
   const button = qs('.buy-development button');
   if (button.classList.contains('unavailable')) {
-    const explanation = gso.developmentsLeft ?
+    const explanation = gs.developmentsLeft ?
         `You don't have the resources for
          a development card.` :
         `There aren't any development cards left.`
@@ -782,7 +783,7 @@ ael('.confirm-buy-card .cancel', 'click', () => {
 });
 ael('.confirm-buy-card .confirm', 'click', () => {
   qs('.confirm-buy-card').style.display = 'none';
-  const color = gso.order[gso.turn];
+  const color = colorOnTurn();
   gainCard(color, 'unripe', drawDevelopmentCard());
   const sel = '.hand.development .card:last-child';
   const card = qs(`.player-area.${color} ${sel}`);
@@ -805,7 +806,7 @@ function playDevelopmentCard(cardName) {
         const h = document.createElement('div');
         h.classList.add('hand', 'centered');
         h.dataset.resource = r;
-        if (i >= gso.bank[r]) {
+        if (i >= gs.bank[r]) {
           h.classList.add('unavailable');
           qs('.note', yopm).style.display = 'block';
         }
@@ -835,10 +836,10 @@ function playDevelopmentCard(cardName) {
         );
         return;
       }
-      const color = gso.order[gso.turn];
+      const color = colorOnTurn();
       for (const h of qsa('.selected', yopm)) {
         const r = h.dataset.resource;
-        gso.bank[r]--;
+        gs.bank[r]--;
         gainCard(color, 'resource', r);
       }
       hideThis();
@@ -879,7 +880,7 @@ function playDevelopmentCard(cardName) {
         );
         return;
       }
-      const color = gso.order[gso.turn];
+      const color = colorOnTurn();
       for (const c of playerColors) {
         if (c === color) continue;
         
@@ -915,67 +916,59 @@ const robber = draw(seq(board.hexes.length).filter(
 )) ?? -1;
 if (robber > -1) moveRobber(robber);
 
-// Game state objects
-// Overt (gso) is known by everyone
-// Covert (gsc) is known only by player in question
-// Unknown (gsu) is known by no one, in principle
-// These will eventually also go in database
-export const gso = {
+// Game state object
+export const gs = {
+  control: {},
+  order: {},
   setup: 2,
   turn: -1,
   roll: null,
   playedDevelopmentOnTurn: false,
   houses: sites.map(s => ''),
   roads: edges.map(e => ''),
-  hands: {},
+  nCards: {},
+  playedCards: {},
   piecesLeft: {},
   bank: {},
-};
-export const gsc = {hands: {}};
-export const gsu = {developmentDeck: []};
-
-// Game state object showing knowledge by each player
-export const gs = {
-  
+  hands: {},
+  developmentDeck: []
 };
 
 // Regulate which user controls which color
 // These will eventually be user ids or something
-gso.control = {orange: true};
+gs.control = {orange: true};
 
-// Add hand information to game state objects
+// Add piece and hand information to game state
 for (const c of playerColors) {
+  gs.piecesLeft[c] = {...pieceCount};
+  gs.nCards[c] = {
+    resource: 0, development: 0, unripe: 0,
+  };
   const dObj = Object.fromEntries(
     Object.keys(developmentCount).map(d => [d, 0])
   );
-  gso.hands[c] = {
-    resource: 0, development: 0, unripe: 0,
-    played: {...dObj},
-  };
-  if (! gso.control[c]) continue;
-  const rObj = Object.fromEntries(
-    resources.map(r => [r, 0])
-  );
-  gsc.hands[c] = {
-    resource: {...rObj},
+  gs.playedCards[c] = {...dObj};
+  // if (! gs.control[c]) continue;
+  gs.hands[c] = {
+    resource: Object.fromEntries(
+      resources.map(r => [r, 0])
+    ),
     development: {...dObj}, unripe: {...dObj},
   };
 }
 
-// Add piece information to game state object
-for (const c of playerColors) {
-  gso.piecesLeft[c] = {...pieceCount};
-}
-
 // Shuffle seating arrangement
-gso.order = shuffle(playerColors);
-// Rotate until top-left is player under control
-while (! gso.control[gso.order[1]]) {
-  gso.order.unshift(gso.order.pop());
+gs.order = shuffle(playerColors);
+// Rotate until top-left is player under control,
+// (unless no player is under control)
+if (playerColors.some(color => gs.control[color])) {
+  while (! gs.control[gs.order[1]]) {
+    gs.order.unshift(gs.order.pop());
+  }  
 }
 
 // Make player areas
-for (const [i, color] of gso.order.entries()) {
+for (const [i, color] of gs.order.entries()) {
   makePlayerArea(i, color);
   showPlayerName(color, 'Anonymous');
 }
@@ -990,11 +983,11 @@ for (const area of qsa('section.player-area')) {
   }
   qs('.username', s).innerHTML =
       qs('.username', area).innerHTML;
-  const xpend = area.classList.contains('left') ?
+  const fn = area.classList.contains('left') ?
       'prepend' : 'append';
   const where = area.classList.contains('top') ?
       'top' : 'bottom';
-  qs(`.acquire-cards .${where}`)[xpend](s);
+  qs(`.acquire-cards .${where}`)[fn](s);
 }
 
 // Add costs to turn menu
@@ -1013,21 +1006,23 @@ for (const t of qsa('template, .modal')) {
 }
 
 // Determine who goes first and rotate accordingly
-const goesFirst = draw(gso.order);
-while (gso.order[0] !== goesFirst) {
-  gso.order.unshift(gso.order.pop());
+{
+  const goesFirst = draw(gs.order);
+  while (gs.order[0] !== goesFirst) {
+    gs.order.unshift(gs.order.pop());
+  }
 }
 
 // Create and shuffle development card deck
-gsu.developmentDeck = shuffle(
+gs.developmentDeck = shuffle(
   Object.entries(developmentCount).flatMap(
     a => rep(a[0], a[1])
   )
 );
-gso.developmentsLeft = gsu.developmentDeck.length;
+gs.developmentsLeft = gs.developmentDeck.length;
 
 // Create and stock resource cards in bank
-gso.bank = Object.fromEntries(resources.map(
+gs.bank = Object.fromEntries(resources.map(
   r => [r, resourceCount[r] ?? resourceCount.all]
 ));
 
@@ -1038,6 +1033,4 @@ showExampleGame();
 
 // nextSetupTurn();
 
-console.log(gso);
-console.log(gsc);
-console.log(gsu);
+console.log(gs);

@@ -2,7 +2,7 @@ import {qs} from './utility.js';
 import {resources} from './constants.js';
 import {
   placeRoad, placeHouse, gainCard, awardBadge,
-  showPlayerName, adjustCards, gso, gsc, gsu,
+  showPlayerName, adjustCards, gs,
 } from './hexagons.js';
 
 export function showExampleGame() {
@@ -57,9 +57,10 @@ export function showExampleGame() {
     for (const [i, r] of resources.entries()) {
       const n = hand[i];
       for (let j = 0; j < n; j++) {
-        gso.bank[r]--;
-        const cardName = gso.control[color] ? r : '';
-        gainCard(color, 'resource', cardName);
+        gs.bank[r]--;
+        const own = gs.control[color];
+        gainCard(color, 'resource', own ? r : '');
+        if (! own) gs.hands[color].resource[r]++
       }
     }  
   }
@@ -77,8 +78,9 @@ export function showExampleGame() {
     const [color, hand] of Object.entries(handsD)
   ) {
     for (const card of hand) {
-      const cardName = gso.control[color] ? card : '';
-      gainCard(color, 'development', cardName);
+      const own = gs.control[color];
+      gainCard(color, 'development', own ? card : '');
+      if (! own) gs.hands[color].development[card]++;
     }
   }
 
@@ -109,8 +111,8 @@ export function showExampleGame() {
     }
   }
   
-  gsu.developmentDeck = ['knight', 'chapel'];
-  gso.developmentsLeft = gsu.developmentDeck.length;
+  gs.developmentDeck = ['knight', 'chapel'];
+  gs.developmentsLeft = gs.developmentDeck.length;
 
   awardBadge('largest-army', 'orange');
   awardBadge('longest-road', 'blue');
@@ -127,9 +129,9 @@ export function showExampleGame() {
   
   adjustCards();
   
-  gso.setup = 0;
-  gso.turn = gso.order.indexOf('orange');
-  // gso.playedDevelopmentOnTurn = true;
+  gs.setup = 0;
+  gs.turn = gs.order.indexOf('orange');
+  // gs.playedDevelopmentOnTurn = true;
   qs('.player-area.orange .username').classList.add(
     'on-turn'
   );
