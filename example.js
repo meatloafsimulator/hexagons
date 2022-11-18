@@ -45,8 +45,8 @@ export function showExampleGame() {
   }
 
   const handsR = {
-    // orange: [2, 1, 1, 2, 3],
-    orange: [16, 12, 12, 12, 17],
+    orange: [2, 1, 1, 2, 3],
+    // orange: [16, 16, 16, 14, 18],
     blue:   [3, 0, 1, 0, 1],
     white:  [0, 3, 0, 1, 0],
     red:    [0, 0, 2, 3, 0],
@@ -68,7 +68,7 @@ export function showExampleGame() {
   const handsD = {
     orange: [
       'knight', 'palace',
-      'monopoly',  'year-of-plenty',
+      'monopoly',  'year-of-plenty', 'road-building',
     ],
     blue: ['market'],
     white: ['knight', 'knight'],
@@ -96,9 +96,7 @@ export function showExampleGame() {
   }
 
   const playedD = {
-    orange: [
-      'knight', 'knight', 'knight', 'road-building',
-    ],
+    orange: ['knight', 'knight', 'knight'],
     blue: ['knight', 'road-building'],
     white: ['knight', 'year-of-plenty'],
     red: ['knight', 'knight', 'monopoly'],

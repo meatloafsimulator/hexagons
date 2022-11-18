@@ -10,7 +10,9 @@
   height: 30px;
   width: 72px;
   margin: 3px 0;
-  border: solid var(--color-gold) 1px;
+  --width-border: 1px;
+  border: solid var(--color-gold) var(--width-border);
+  border-radius: var(--width-border);
   padding: 5px;
   color: var(--color-gold);
   flex-direction: column;
@@ -49,7 +51,7 @@
 .badge-viewer .badge {
   height: 378px;
   width: 486px;
-  border-width: 12px;
+  --width-border: 12px;
   margin: 12px;
   padding: 0 12px;
   justify-content: space-evenly;

@@ -45,11 +45,15 @@ export function showPlayerName(color, username) {
 
 function moveRobber(hex) {
   qs('.chit.robber')?.classList.remove('robber');
-  const e = qsa('.chit')[hex];
-  e.classList.add('robber');
-  e.append(
+  qs('.hex.robber')?.classList.remove('robber');
+  const chit = qsa('.chit')[hex];
+  chit.classList.add('robber');
+  chit.append(
     qs('svg.robber') ?? fromTemplate('robber')
   );
+  const hexElement = qsa('.hex')[hex];
+  hexElement.classList.add('robber');
+  gs.robber = hex;
 }
 
 export function placeHouse(color, type, site) {
@@ -82,6 +86,18 @@ export function placeRoad(color, edge) {
   e.classList.add(color);
   gs.roads[edge] = color.substring(0, 1);
   gs.piecesLeft[color].road--;
+}
+function removeRoad(edge) {
+  const color = playerColors.find(
+    x => x.substring(0, 1) === gs.roads[edge]
+  );
+  if (! color) return;
+  stockRoad(color);
+  const e = qs(`.road.edge-${edge}`);
+  e.classList.add('invisible');
+  e.classList.remove(color);
+  gs.roads[edge] = '';
+  gs.piecesLeft[color].road++;
 }
 
 function stockHouse(color, type) {
@@ -144,6 +160,7 @@ function makeCardPlayed(color, cardName) {
       [data-name="${cardName}"]:not(.unripe)`;
   qs(sel).remove();
   gainCard(color, 'played', cardName);
+  adjustCards();
   
   // Move card in game state
   gs.nCards[color].development--;
@@ -253,6 +270,9 @@ function sitesClickable(color, type) {
     );
   }
 }
+function boardClickable(isClickable) {
+  qs('.board').style.zIndex = isClickable ? 2 : 0;
+}
 
 function colorOnTurn() {
   return gs.order[gs.turn];
@@ -266,7 +286,7 @@ function nextSetupTurn() {
   } else if (gs.turn === -1) {
     gs.setup--;
     gs.turn++;
-    qs('.board').style.zIndex = 0;
+    boardClickable(false);
     nextTurn();
     cb.dataset.free = false;
     return;
@@ -274,7 +294,7 @@ function nextSetupTurn() {
   sitesClickable(colorOnTurn(), 'settlement');
   cb.dataset.type = 'settlement';
   cb.dataset.free = true;
-  qs('.board').style.zIndex = 2;
+  boardClickable(true);
 }
 function nextTurn() {
   
@@ -284,7 +304,7 @@ export function clickSite(site) {
   sitesClickable(false);
   qs(`.site-${site}`).classList.add('selected');
   qs('.confirm-build').dataset.loc = site;
-  showConfirmBuild(sites[site]);
+  showConfirm('build' ,sites[site]);
 }
 export function clickEdge(edge) {
   edgesClickable(false);
@@ -292,53 +312,134 @@ export function clickEdge(edge) {
   qs('.confirm-build').dataset.loc = edge;
   const [s0, s1] = edges[edge].map(s => sites[s]);
   const center = [0, 1].map(i => (s0[i] + s1[i]) / 2);
-  showConfirmBuild(center);
+  showConfirm('build', center);
+}
+export function clickHex(hex) {
+  if (gs.robber === hex) {
+    showExplanation(
+      `You can't leave the robber where it is.`
+    );
+    return;
+  }
+  qsa('.chit')[hex].classList.add('selected');
+  qs('.board svg').classList.remove('moving-robber');
+  qs('.median .cancel').style.display = 'none';
+  qs('.confirm-robber').dataset.hex = hex;
+  showConfirm('robber', centers[hex]);
 }
 
-// Add confirm-build dialog
-{
+// Add confirm-cancel dialogs
+for (const x of ['robber', 'build', 'buy-card']) {
   const cb = fromTemplate('dialog-confirm-cancel');
-  cb.classList.add('confirm-build');
+  cb.classList.add(`confirm-${x}`);
   qs('.prompt', cb).innerHTML =
-      fromTemplate('ui-text.confirm-build');
+      fromTemplate(`ui-text.confirm-${x}`);
   qs('.board').append(cb);
 }
-
-function showConfirmBuild(svgCoords) {
-  const cb = qs('.confirm-build');
-  const [l, t] = convertCoordinates(svgCoords);
-  const ab = svgCoords[1] > 0 ? -1 : 1;
-  let style = `--l: ${l}; --t: ${t}; --ab: ${ab};`;
-  cb.style = style;
+function showConfirm(type, svgCoords) {
+  const cb = qs(`.confirm-${type}`);
+  const coords = svgCoords ?? [0, 0];
+  const [l, t] = convertCoordinates(coords);
+  const ab = ! svgCoords ? 0 : coords[1] > 0 ? -1 : 1;
+  cb.style = `--l: ${l}; --t: ${t}; --ab: ${ab};`;
   cb.style.display = 'flex';
   qs('.median .cancel').style.display = 'none';
+  qs('.my-turn').style.display = 'none';
 }
+
+ael('.confirm-robber .cancel', 'click', () => {
+  const cr = qs('.confirm-robber');
+  qs('.selected').classList.remove('selected');
+  cr.style.display = 'none';
+  boardClickable(true);
+  qs('.board svg').classList.add('moving-robber');
+  qs('.median .cancel').style.display = 'block';
+});
+ael('.confirm-robber .confirm', 'click', () => {
+  const cr = qs('.confirm-robber');
+  qs('.selected').classList.remove('selected');
+  cr.style.display = 'none';
+  boardClickable(false);
+  qs('.my-turn').style.display = 'block';
+  const hex = + cr.dataset.hex
+  moveRobber(hex);
+  if (cr.dataset.type === 'knight') {
+    makeCardPlayed(colorOnTurn(), 'knight');    
+  }
+  const stealChoices = [];
+  for (const color of playerColors) {
+    if (color === colorOnTurn()) continue;
+    const c = color.substring(0, 1);
+    const adjHouses = gs.houses.filter(
+      (e, i) => hexSites[hex].includes(i)
+    );
+    if (adjHouses.some(x => x.toLowerCase() === c)) {
+      stealChoices.push(color);
+    }
+  }
+  if (! stealChoices.length) return;
+  qs
+  const sm = qs('.steal-menu');
+  const cb = qs('.confirm', sm);
+  cb.classList.add('unavailable');
+  for (const color of playerColors) {
+    const quadrant = qs(`.${color}`, sm);
+    if (! stealChoices.includes(color)) continue; 
+    quadrant.style.visibility = 'visible';
+    const h = `.player-area.${color} .hand.resource`;
+    const clonedHand = qs(h).cloneNode(true);
+    clonedHand.classList.add('centered');
+    qs('.hand', quadrant).replaceWith(clonedHand);
+  }
+  setTimeout(() => {
+    sm.style.display = 'flex';
+    qs('.median .my-turn').style.display = 'none';
+    qs('.median .steal').style.display = 'block';
+  }, config.delay);
+});
+
 ael('.confirm-build .cancel', 'click', () => {
   const cb = qs('.confirm-build');
   qs('.selected').classList.remove('selected');
   cb.style.display = 'none';
-  qs('.board').style.zIndex = 0;
-  if (gs.setup) {
-    const color = colorOnTurn();
-    if (cb.dataset.type === 'road') {
-      edgesClickable(color);
-    } else sitesClickable(color, 'settlement');
-    return;
-  }
-  qs('.my-turn').style.display = 'block';
-  showTurnMenu();
+  const color = colorOnTurn();
+  if (cb.dataset.type === 'road') {
+    edgesClickable(color);
+  } else sitesClickable(color, cb.dataset.type);
+  qs('.median .cancel').style.display = 'block';
 });
 ael('.confirm-build .confirm', 'click', () => {
   const color = colorOnTurn();
   const cb = qs('.confirm-build');
-  const {type, loc, free} = cb.dataset;
+  const {type, loc} = cb.dataset;
+  const nFree = + (cb.dataset.freePiecesToGo ?? 0);
   qs('.selected').classList.remove('selected');
   cb.style.display = 'none';
-  qs('.board').style.zIndex = 0;
-  if (! free) payCost(color, type);
+  if (! nFree) payCost(type);
   if (type === 'road') {
     placeRoad(color, loc);
     if (gs.setup) nextSetupTurn();
+    else if (nFree > 1) {
+      edgesClickable(color);
+      cb.dataset.freePiecesToGo = nFree - 1;
+      if (cb.dataset.freePiecesPlaced) {
+        cb.dataset.freePiecesPlaced += ' ';
+      }
+      cb.dataset.freePiecesPlaced += loc;
+      qs('.median .cancel').style.display = 'block';
+      const nRoadsLeft = gs.piecesLeft[color].road;
+      const nClickable = qsa('.clickable').length;
+      if (! nRoadsLeft || ! nClickable) {
+        edgesClickable(false);
+        const ffrm = qs('.forfeit-free-roads-menu');
+        ffrm.style.display = 'flex';
+      }
+      return;
+    } else if (nFree) {
+      delete cb.dataset.freePiecesToGo;
+      delete cb.dataset.freePiecesPlaced;
+      makeCardPlayed(color, 'road-building');
+    }
   } else {
     placeHouse(color, type, loc);
     if (gs.setup) {
@@ -347,10 +448,32 @@ ael('.confirm-build .confirm', 'click', () => {
     }    
   }
   if (gs.setup) return;
+  boardClickable(false);
   qs('.my-turn').style.display = 'block';
 });
+function cancelBuildEntirely() {
+  edgesClickable(false);
+  sitesClickable(false);
+  boardClickable(false);
+  qs('.median .cancel').style.display = 'none';
+  qs('.my-turn').style.display = 'block';
+  const cbds = qs('.confirm-build').dataset;
+  if (! cbds.freePiecesToGo) return;
+  const fpp = cbds.freePiecesPlaced;
+  delete cbds.freePiecesToGo;
+  delete cbds.freePiecesPlaced;
+  if (! fpp) return;
+  for (const loc of fpp.split(' ')) removeRoad(loc);
+  showExplanation(
+    `You have canceled playing the Road Building card.
+     The roads that you had already placed in the
+     process of playing the card have been removed.`
+  );
+}
+ael('.median .cancel', 'click', cancelBuildEntirely);
 
-function payCost(color, type) {
+function payCost(type) {
+  const color = colorOnTurn();
   const payment = [];
   for (const [r, n] of Object.entries(cost[type])) {
     const c = gs.control[color] ? r : 'unknown';
@@ -663,11 +786,9 @@ function discard(color, cards) {
       qs(`.player-area.${color} .hand.resource`);
   for (const card of cards) {
     gs.nCards[color].resource--;
-    if(gs.control[color]) {
-      gs.hands[color].resource[card]--;
-    }
+    gs.hands[color].resource[card]--;
     gs.bank[card]++;
-    qs(`.${card}`, hand).remove();
+    qs(`.${card}, .unknown`, hand).remove();
   }
   adjustCards('resource');
 }
@@ -725,7 +846,7 @@ function beginBuildFromTurnMenu(type) {
   const color = colorOnTurn();
   if (type === 'road') edgesClickable(color);
   else sitesClickable(color, type);
-  qs('.board').style.zIndex = 2;
+  boardClickable(true);
   qs('.confirm-build').dataset.type = type;
   hideTurnMenu();
   qs('.my-turn').style.display = 'none';
@@ -749,17 +870,6 @@ for (const type of ['road', 'settlement', 'city']) {
   });
 }
 
-// Add confirm-buy-card dialog
-{
-  const cb = fromTemplate('dialog-confirm-cancel');
-  cb.classList.add('confirm-buy-card');
-  qs('.prompt', cb).innerHTML =
-      fromTemplate('ui-text.confirm-buy-card');
-  const [l, t] = convertCoordinates([0, 0]);
-  cb.style = `--l: ${l}; --t: ${t};`;
-  qs('.board').append(cb);
-}
-
 function drawDevelopmentCard() {
   gs.developmentsLeft--;
   return gs.developmentDeck.pop();
@@ -775,7 +885,7 @@ ael('.buy-development button', 'click', () => {
     return;
   }
   hideTurnMenu();
-  qs('.confirm-buy-card').style.display = 'flex';
+  showConfirm('buy-card');
 });
 ael('.confirm-buy-card .cancel', 'click', () => {
   qs('.confirm-buy-card').style.display = 'none';
@@ -792,6 +902,17 @@ ael('.confirm-buy-card .confirm', 'click', () => {
 });
 
 function playDevelopmentCard(cardName) {
+  if (cardName === 'knight') {
+    showExplanation(
+      'Select where you want to move the robber.'
+    );
+    hideCardViewer();
+    boardClickable(true);
+    qs('.board svg').classList.add('moving-robber');
+    qs('.confirm-robber').dataset.type = 'knight';
+    qs('.my-turn').style.display = 'none';
+    qs('.median .cancel').style.display = 'block';
+  }
   if (cardName === 'year-of-plenty') {
     const nCards = 2;
     const yopm = qs('.yop-menu');
@@ -819,33 +940,18 @@ function playDevelopmentCard(cardName) {
             'unavailable',
             qsa('.selected', yopm).length !== nCards
           );
+          // Handle the case when the bank becomes
+          // completely out of all resources
+          const availableLeft = qsa(
+            '.hand:not(.selected, .unavailable)', yopm
+          );
+          if (! availableLeft.length) {
+            cb.classList.remove('unavailable');
+          }
         });
         qs('.choices', yopm).append(h);
       }
     }
-    function hideThis() {
-      yopm.style.display = 'none';
-      qs('.choices', yopm).replaceChildren();
-      qs('h2 span', yopm).innerHTML = 'zero cards';
-    }
-    ael(qs('.cancel', yopm), 'click', hideThis);
-    ael(cb, 'click', () => {
-      if (cb.classList.contains('unavailable')) {
-        showExplanation(
-          `Select the right number of cards to take.`
-        );
-        return;
-      }
-      const color = colorOnTurn();
-      for (const h of qsa('.selected', yopm)) {
-        const r = h.dataset.resource;
-        gs.bank[r]--;
-        gainCard(color, 'resource', r);
-      }
-      hideThis();
-      adjustCards('resource');
-      makeCardPlayed(color, 'year-of-plenty');
-    });
     setTimeout(() => {
       hideCardViewer();
       yopm.style.display = 'flex';
@@ -868,32 +974,207 @@ function playDevelopmentCard(cardName) {
       });
       qs('.choices', mm).append(h);
     }
-    function hideThis() {
-      mm.style.display = 'none';
-      qs('.choices', mm).replaceChildren();
-    }
-    ael(qs('.cancel', mm), 'click', hideThis);
-    ael(cb, 'click', () => {
-      if (cb.classList.contains('unavailable')) {
-        showExplanation(
-          `Choose a resource type to monopolize.`
-        );
-        return;
-      }
-      const color = colorOnTurn();
-      for (const c of playerColors) {
-        if (c === color) continue;
-        
-      }
-      hideThis();
-      adjustCards('resource');
-      makeCardPlayed(color, 'monopoly');
-    });
     setTimeout(() => {
       hideCardViewer();
       mm.style.display = 'flex';
     }, config.delay);
   }
+  if (cardName === 'road-building') {
+    let nFreeRoads = 2;
+    hideCardViewer();
+    const color = colorOnTurn();
+    const roadsLeft = gs.piecesLeft[color].road;
+    if (! roadsLeft) {
+      showExplanation(`You're out of roads.`);
+      return;
+    }
+    showExplanation(
+      'Select where you want to build your roads.'
+    );
+    edgesClickable(color);
+    boardClickable(true);
+    const cb = qs('.confirm-build');
+    cb.dataset.type = 'road';
+    cb.dataset.freePiecesToGo = nFreeRoads;
+    cb.dataset.freePiecesPlaced = '';
+    qs('.my-turn').style.display = 'none';
+    qs('.median .cancel').style.display = 'block';
+  }
+}
+
+// Attach button click listener to acquire-cards
+ael('.acquire-cards .confirm', 'click', () => {
+  const acm = qs('.acquire-cards');
+  acm.style.display = 'none';
+  qs('h2 span', acm).innerHTML = 'Cards Collected';
+  for (const quadrant of qsa('.quadrant', acm)) {
+    quadrant.style.visibility = 'visible';
+    qs('.hand', quadrant).replaceChildren();
+  }
+});
+
+// Attach button click listeners to steal-menu
+function hideStealMenu() {
+  const sm = qs('.steal-menu');
+  sm.style.display = 'none';
+  const cb = qs('.confirm', sm);
+  delete cb.dataset.stealFrom;
+  cb.classList.add('unavailable');
+  qs('.selected', sm)?.classList.remove('selected');
+}
+ael('.steal-menu .close', 'click', hideStealMenu);
+ael('.steal-menu .confirm', 'click', () => {
+  const cb = qs('.steal-menu .confirm');
+  if (cb.classList.contains('unavailable')) {
+    showExplanation('Select a player.');
+    return;
+  }
+  const from = cb.dataset.stealFrom;
+  hideStealMenu();
+  for (const q of qsa('.steal-menu .quadrant')) {
+    q.style.visibility = 'hidden';
+    qs('.hand', q).replaceChildren();
+  }
+  qs('.median .steal').style.display = 'none';
+  qs('.my-turn').style.display = 'block';
+  steal(from);
+});
+function steal(from) {
+  const to = colorOnTurn();
+  const handObj = gs.hands[from].resource;
+  const handArr = Object.entries(handObj).flatMap(
+    e => rep(e[0], e[1])
+  );
+  if (! handArr.length) return;
+  const r = draw(handArr);
+  handObj[r]--;
+  gs.hands[to].resource[r]++;
+  const handEl =
+      qs(`.player-area.${from} .hand.resource`);
+  qs(`.${r}, .unknown`, handEl).remove();
+  gainCard(to, 'resource', r);
+  adjustCards('resource');
+  const acm = qs('.acquire-cards');
+  qs('h2 span', acm).innerHTML =
+      'Card Stolen by Robber';
+  for (const quadrant of qsa('.quadrant', acm)) {
+    quadrant.style.visibility = 'hidden';
+  }
+  const qFrom = qs(`.quadrant.${from}`, acm);
+  qFrom.style.visibility = 'visible';
+  const card = makeCard('resource', r);
+  qs('.hand', qFrom).append(makeCard('resource', r));
+  const qTo = qs(`.quadrant.${to}`, acm);
+  qTo.style.visibility = 'visible';
+  qs('.hand', qTo).append('(receives card)');
+  acm.style.display = 'flex';
+}
+ael('.median .steal', 'click', () => {
+  qs('.steal-menu').style.display = 'flex';
+});
+
+// Attach button click listeners to yop-menu
+{
+  const yopm = qs('.yop-menu');
+  const cb = qs('.confirm', yopm);
+  function hideYearOfPlenty() {
+    yopm.style.display = 'none';
+    qs('.choices', yopm).replaceChildren();
+    qs('h2 span', yopm).innerHTML = 'zero cards';
+  }
+  ael(qs('.cancel', yopm), 'click', hideYearOfPlenty);
+  ael(cb, 'click', () => {
+    if (cb.classList.contains('unavailable')) {
+      showExplanation(
+        `Select the right number of cards to take.`
+      );
+      return;
+    }
+    const color = colorOnTurn();
+    const acm = qs('.acquire-cards');
+    const span = qs('h2 span', acm);
+    span.innerHTML = 'Cards Gained by Year of Plenty';
+    for (const quadrant of qsa('.quadrant', acm)) {
+      if (! quadrant.classList.contains(color)) {
+        quadrant.style.visibility = 'hidden';
+      }
+    }
+    const h = qs(`.quadrant.${color} .hand`, acm);
+    for (const x of qsa('.selected', yopm)) {
+      const r = x.dataset.resource;
+      h.append(makeCard('resource', r));
+      gs.bank[r]--;
+      gainCard(color, 'resource', r);
+    }
+    makeCardPlayed(color, 'year-of-plenty');
+    adjustCards('resource');
+    hideYearOfPlenty();
+    acm.style.display = 'flex';
+  });
+}
+
+// Attach button click listeners to monopoly-menu
+{
+  const mm = qs('.monopoly-menu');
+  const cb = qs('.confirm', mm);
+  function hideMonopoly() {
+    mm.style.display = 'none';
+    qs('.choices', mm).replaceChildren();
+  }
+  ael(qs('.cancel', mm), 'click', hideMonopoly);
+  ael(cb, 'click', () => {
+    if (cb.classList.contains('unavailable')) {
+      showExplanation(
+        `Choose a resource type to monopolize.`
+      );
+      return;
+    }
+    const r = qs('.selected', mm).dataset.resource;
+    const color = colorOnTurn();
+    const acm = qs('.acquire-cards');
+    const span = qs('h2 span', acm);
+    span.innerHTML = 'Cards Lost to Monopoly';
+    for (const c of playerColors) {
+      const quadrant = qs(`.quadrant.${c}`, acm);
+      if (c === color) {
+        qs('.hand', quadrant).innerHTML =
+            '(receives cards)';
+        continue;
+      }
+      const n = gs.hands[c].resource[r];
+      if (! n) continue;
+      discard(c, rep(r, n));
+      const h = qs(`.quadrant.${c} .hand`, acm);
+      for (let i = 0; i < n; i++) {
+        h.append(makeCard('resource', r));
+        gs.bank[r]--;
+        gainCard(color, 'resource', r);
+      }
+    }
+    makeCardPlayed(color, 'monopoly');
+    adjustCards();
+    hideMonopoly();
+    acm.style.display = 'flex';
+  });
+}
+
+// Attach button click listeners to ffrm-menu
+{
+  const ffrm = qs('.forfeit-free-roads-menu');
+  ael(qs('.cancel', ffrm), 'click', () => {
+    ffrm.style.display = 'none';
+    cancelBuildEntirely();
+  });
+  ael(qs('.confirm', ffrm), 'click', () => {
+    ffrm.style.display = 'none';
+    const cbds = qs('.confirm-build').dataset;
+    delete cbds.freePiecesToGo;
+    delete cbds.freePiecesPlaced;
+    makeCardPlayed(colorOnTurn(), 'road-building');
+    boardClickable(false);
+    qs('.median .cancel').style.display = 'none';
+    qs('.my-turn').style.display = 'block';
+  });
 }
 
 function showExplanation(text) {
@@ -911,11 +1192,6 @@ ael('.explanation button', 'click', () => {
 const board = makeBoard(1);
 renderBoard(board);
 
-const robber = draw(seq(board.hexes.length).filter(
-  x => board.hexes[x] === 'desert'
-)) ?? -1;
-if (robber > -1) moveRobber(robber);
-
 // Game state object
 export const gs = {
   control: {},
@@ -926,6 +1202,7 @@ export const gs = {
   playedDevelopmentOnTurn: false,
   houses: sites.map(s => ''),
   roads: edges.map(e => ''),
+  robber: -1,
   nCards: {},
   playedCards: {},
   piecesLeft: {},
@@ -933,6 +1210,14 @@ export const gs = {
   hands: {},
   developmentDeck: []
 };
+
+// If exactly one desert, place robber there
+{
+  const deserts = board.hexes.flatMap((e, i) => (
+    e === 'desert' ? [i] : []
+  ));
+  if (deserts.length === 1) moveRobber(deserts[0]);
+}
 
 // Regulate which user controls which color
 // These will eventually be user ids or something
@@ -973,9 +1258,9 @@ for (const [i, color] of gs.order.entries()) {
   showPlayerName(color, 'Anonymous');
 }
 
-// Make player quadrants on acquire-cards screen
+// Make quadrants on acquire-cards and steal-menu
 for (const area of qsa('section.player-area')) {
-  const s = fromTemplate('acquire-cards-quadrant');
+  const s = fromTemplate('quadrant');
   for (const color of playerColors) {
     s.classList.toggle(
       color, area.classList.contains(color)
@@ -983,11 +1268,27 @@ for (const area of qsa('section.player-area')) {
   }
   qs('.username', s).innerHTML =
       qs('.username', area).innerHTML;
+  const s0 = s.cloneNode(true);
   const fn = area.classList.contains('left') ?
       'prepend' : 'append';
   const where = area.classList.contains('top') ?
       'top' : 'bottom';
   qs(`.acquire-cards .${where}`)[fn](s);
+  qs(`.steal-menu .${where}`)[fn](s0);
+}
+
+// Attach quadrant click listeners to steal-menu
+for (const color of playerColors) {
+  const sm = qs('.steal-menu');
+  const quadrant = qs(`.quadrant.${color}`, sm);
+  ael(quadrant, 'click', () => {
+    const previous = qs('.selected', sm);
+    previous?.classList.remove('selected');
+    quadrant.classList.add('selected');
+    const cb = qs('.confirm', sm);
+    cb.dataset.stealFrom = color;
+    cb.classList.remove('unavailable');
+  });
 }
 
 // Add costs to turn menu
@@ -1030,6 +1331,7 @@ import {showExampleGame} from './example.js';
 showExampleGame();
 
 // showDiscardMenu('orange');
+// qs('.acquire-cards').style.display = 'flex';
 
 // nextSetupTurn();
 

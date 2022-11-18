@@ -3,7 +3,9 @@ import {
   w, sites, centers, hexSites, edges, 
   frameVertices, coast, convertCoordinates,
 } from './geometry.js';
-import {clickSite, clickEdge} from './hexagons.js';
+import {
+  clickSite, clickEdge, clickHex,
+} from './hexagons.js';
 
 export function renderBoard(board) {
 
@@ -42,6 +44,7 @@ export function renderBoard(board) {
       s => [sites[s][0] * w, sites[s][1]]
     );
     e.setAttribute('points', pointsArr.join());
+    ael(e, 'click', () => clickHex(i));
     svg.append(e);
   }
 

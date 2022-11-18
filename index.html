@@ -19,6 +19,9 @@
     <button type="button" class="discard primary">
       Discard
     </button>
+    <button type="button" class="steal primary">
+      Steal
+    </button>
     <button type="button" class="cancel">
       Cancel
     </button>
@@ -133,9 +136,29 @@
     </button>
   </div>
 </section>
-<section class="acquire-cards modal">
+<section class="acquire-cards quad-box modal">
   <div class="top centered"></div>
-  <h2>Resource Cards Taken</h2>
+  <div class="middle centered">
+    <h2>Resource <span>Cards Collected</span></h2>
+    <button type="button" class="confirm">
+      Continue
+    </button>
+  </div>
+  <div class="bottom centered"></div>
+</section>
+<section class="steal-menu quad-box modal">
+  <div class="top centered"></div>
+  <div class="middle centered">
+    <h2>Choose a Player From Whom to Steal a Card</h2>
+    <div>
+      <button type="button" class="close cancel">
+        Hide Menu
+      </button>
+      <button type="button" class="confirm">
+        Steal Card
+      </button>
+    </div>
+  </div>
   <div class="bottom centered"></div>
 </section>
 <section class="discard-menu card-select modal">
@@ -175,6 +198,20 @@
     </button>
     <button type="button" class="confirm">
       Confirm
+    </button>
+  </div>
+</section>
+<section class="forfeit-free-roads-menu modal">
+  <div class="prompt">
+    You can't place any more roads.
+    Do you still want to play the Road Building card?
+  </div>
+  <div>
+    <button type="button" class="cancel">
+      Cancel
+    </button>
+    <button type="button" class="confirm">
+      Play Anyway
     </button>
   </div>
 </section>
@@ -231,9 +268,9 @@
     <div class="badges"></div>
   </section>
 </template>
-<template class="acquire-cards-quadrant">
+<template class="quadrant">
   <section class="quadrant centered">
-    <div class="hand">Card Card</div>
+    <div class="hand centered"></div>
     <div class="color-indicator"></div>
     <div class="username"></div>
   </section>
@@ -339,4 +376,7 @@
 </template>
 <template class="ui-text confirm-buy-card">
   Buy card?
+</template>
+<template class="ui-text confirm-robber">
+  Move here?
 </template>

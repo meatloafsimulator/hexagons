@@ -87,35 +87,50 @@
   stroke-linecap: round;
 }
 
-.modal.explanation {
-  z-index: 4;
-}
-.modal.explanation .prompt {
+.modal .prompt {
   font-size: 25px;
   max-width: 600px;
   margin: 20px;
 }
 
-.modal.acquire-cards {
+.modal.explanation {
+  z-index: 4;
+}
+
+.modal.quad-box {
   justify-content: space-evenly;
 }
-.modal.acquire-cards :is(.top, .bottom) {
+.modal.quad-box :is(.top, .bottom) {
   width: var(--width-game-area);
   justify-content: space-around;
   font-size: 25px;
 }
-.modal.acquire-cards .quadrant {
-  width: calc(var(--width-game-area) / 2);
+.modal.quad-box .middle {
   flex-direction: column;
 }
-.modal.acquire-cards .bottom .quadrant {
+
+.quadrant {
+  flex-direction: column;
+}
+.bottom .quadrant {
   flex-direction: column-reverse;
 }
-.modal.acquire-cards .color-indicator {
+.quadrant .color-indicator {
   box-sizing: border-box;
   height: 12px;
   width: 120px;
   background: var(--color-player);
   border: solid 1.5px #000;
   margin: 12px;
+}
+
+.steal-menu .quadrant {
+  padding: 12px;
+  --br: 6px;
+  border-radius: var(--br);
+  cursor: pointer;
+  visibility: hidden;
+}
+.steal-menu .quadrant.selected {
+  outline: solid var(--br) var(--color-gold);
 }
