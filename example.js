@@ -1,8 +1,9 @@
 import {qs} from './utility.js';
 import {resources} from './constants.js';
 import {
-  placeRoad, placeHouse, gainCard, awardBadge,
-  showPlayerName, adjustCards, gs,
+  placeRoad, placeHouse,
+  gainCard, makeCardPlayed, adjustCards,
+  awardBadge, showPlayerName, gs,
 } from './hexagons.js';
 
 export function showExampleGame() {
@@ -45,8 +46,8 @@ export function showExampleGame() {
   }
 
   const handsR = {
-    orange: [2, 1, 1, 2, 3],
-    // orange: [16, 16, 16, 14, 18],
+    // orange: [2, 1, 1, 2, 3],
+    orange: [16, 16, 16, 14, 18],
     blue:   [3, 0, 1, 0, 1],
     white:  [0, 3, 0, 1, 0],
     red:    [0, 0, 2, 3, 0],
@@ -98,22 +99,25 @@ export function showExampleGame() {
   const playedD = {
     orange: ['knight', 'knight', 'knight'],
     blue: ['knight', 'road-building'],
-    white: ['knight', 'year-of-plenty'],
-    red: ['knight', 'knight', 'monopoly'],
+    white: ['year-of-plenty'],
+    red: ['knight', 'knight', 'knight', 'monopoly'],
   };
   for (
     const [color, arr] of Object.entries(playedD)
   ) {
     for (const card of arr) {
-      gainCard(color, 'played', card);
+      const own = gs.control[color];
+      gainCard(color, 'development', own ? card : '');
+      makeCardPlayed(color, card);
     }
   }
+  gs.playedDevelopmentOnTurn = false;
   
   gs.developmentDeck = ['knight', 'chapel'];
   gs.developmentsLeft = gs.developmentDeck.length;
 
-  awardBadge('largest-army', 'orange');
-  awardBadge('longest-road', 'blue');
+  // awardBadge('largest-army', 'red', 3);
+  awardBadge('longest-road', 'blue', 6);
 
   const names = {
     orange: 'Graham',

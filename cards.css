@@ -174,14 +174,17 @@
   outline: solid 6px var(--color-gold);
 }
 
-.acquire-cards .hand {
+:is(.acquire-cards, .acquire-badge) .hand {
   min-height: 72px;
   width: 320px;
   flex-wrap: wrap;
 }
-.acquire-cards .card {
+:is(.acquire-cards, .acquire-badge) .card {
   --w: 36px;
   margin: 2px;
+}
+.acquire-badge .card:not(.knight) {
+  display: none;
 }
 
 .steal-menu .hand {

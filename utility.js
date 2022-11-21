@@ -77,3 +77,9 @@ export function sample(
   while (cumulative < rand) cumulative += p[++i];
   return arr[i];
 }
+
+export function camelCase(str) {
+  return str.replaceAll(
+    /[-\s]+(\w)/g, (_, p1) => p1.toUpperCase()
+  );
+}

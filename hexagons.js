@@ -1,10 +1,12 @@
 import {
   qs, qsa, ael, shuffle, draw, sum, seq, rep,
+  camelCase
 } from './utility.js';
 import {
   resources, cost, pieceCount,
   resourceCount, developmentCount, vpCards,
-  playerColors, exchangeRate, numberWords, config,
+  playerColors, exchangeRate, badgeMinimum,
+  numberWords, config,
 } from './constants.js';
 import {
   w, sites, edges, neighbors, centers, hexSites, 
@@ -140,25 +142,22 @@ export function gainCard(color, loc, cardName) {
   const sel = `.player-area.${color} .hand.${hand}`;
   qs(sel).append(card);
 
-  // Add card in game state
-  if (loc === 'played') {
-    gs.playedCards[color][cardName]++;
-    return;
-  }
+  // Add card in game state unless played
+  if (loc === 'played') return;
   gs.nCards[color][loc]++;
   if (! gs.control[color]) return;
   gs.hands[color][loc][cardName]++;
 
 }
-function makeCardPlayed(color, cardName) {
+export function makeCardPlayed(color, cardName) {
 
   // Development card has now been played on turn
   gs.playedDevelopmentOnTurn = true;
 
   // Move card visually
-  const sel = `.player-area.${color} .hand.development
-      [data-name="${cardName}"]:not(.unripe)`;
-  qs(sel).remove();
+  const h = `.player-area.${color} .hand.development`;
+  const s = `[data-name="${cardName}"]:not(.unripe)`;
+  qs(`${s}, .unknown`, qs(h)).remove()
   gainCard(color, 'played', cardName);
   adjustCards();
   
@@ -226,11 +225,39 @@ function makeBadge(type) {
   ael(badge, 'click', () => showBadgeViewer(badge));
   return badge;
 }
-export function awardBadge(type, color) {
+export function awardBadge(type, color, n) {
+  const prop = camelCase(type);
+  const {color: colorOld, n: nOld} = gs[prop];
+  gs[prop].color = color;
+  gs[prop].n = color ? n : null;
+  if (color === colorOld) return;
   qs(`.player-area .${type}`)?.remove();
-  if (! color) return;
-  const badge = makeBadge(type);
-  qs(`.player-area.${color} .badges`).append(badge);
+  if (color) {
+    const badge = makeBadge(type);
+    qs(`.player-area.${color} .badges`).append(badge);
+  }
+  const abm = qs('.acquire-badge');
+  const title = fromTemplate(`badge-title.${type}`);
+  qs('h2 span', abm).innerHTML = title;
+  for (const q of qsa('.quadrant', abm)) {
+    q.style.visibility = 'hidden';
+  }
+  function addCriterion(c, l) {
+    const q = qs(`.quadrant.${c}`, abm);
+    q.style.visibility = 'visible';
+    if (type === 'largest-army') {
+      const ph = qs(`.player-area.${c} .hand.played`)
+          .cloneNode(true);
+      ph.classList.add('centered');
+      qs('.hand', q).replaceWith(ph);
+    } else {
+      qs('.hand', q).innerHTML =
+          l ? `Road Length: ${l}` : 'Road Broken';
+    }
+  }
+  if (color) addCriterion(color, n);
+  if (colorOld) addCriterion(colorOld, nOld);
+  abm.style.display = 'flex';
 }
 
 function okRoad(color, edge) {
@@ -283,17 +310,18 @@ function nextSetupTurn() {
   if (gs.turn === gs.order.length) {
     gs.setup--;
     gs.turn--;
+    cb.dataset.freePiecesToGo = 1;
   } else if (gs.turn === -1) {
     gs.setup--;
     gs.turn++;
     boardClickable(false);
     nextTurn();
-    cb.dataset.free = false;
+    delete cb.dataset.freePiecesToGo;
     return;
   }
   sitesClickable(colorOnTurn(), 'settlement');
   cb.dataset.type = 'settlement';
-  cb.dataset.free = true;
+  cb.dataset.freePiecesToGo = 2;
   boardClickable(true);
 }
 function nextTurn() {
@@ -364,7 +392,8 @@ ael('.confirm-robber .confirm', 'click', () => {
   const hex = + cr.dataset.hex
   moveRobber(hex);
   if (cr.dataset.type === 'knight') {
-    makeCardPlayed(colorOnTurn(), 'knight');    
+    makeCardPlayed(colorOnTurn(), 'knight');
+    recomputeBadge('largest-army');
   }
   const stealChoices = [];
   for (const color of playerColors) {
@@ -378,7 +407,7 @@ ael('.confirm-robber .confirm', 'click', () => {
     }
   }
   if (! stealChoices.length) return;
-  qs
+  gs.stealing = true;
   const sm = qs('.steal-menu');
   const cb = qs('.confirm', sm);
   cb.classList.add('unavailable');
@@ -391,11 +420,11 @@ ael('.confirm-robber .confirm', 'click', () => {
     clonedHand.classList.add('centered');
     qs('.hand', quadrant).replaceWith(clonedHand);
   }
-  setTimeout(() => {
-    sm.style.display = 'flex';
-    qs('.median .my-turn').style.display = 'none';
-    qs('.median .steal').style.display = 'block';
-  }, config.delay);
+  qs('.median .my-turn').style.display = 'none';
+  qs('.median .steal').style.display = 'block';
+  const abm = qs('.acquire-badge');
+  if (abm.style.display !== 'none') return;
+  sm.style.display = 'flex';
 });
 
 ael('.confirm-build .cancel', 'click', () => {
@@ -411,7 +440,8 @@ ael('.confirm-build .cancel', 'click', () => {
 ael('.confirm-build .confirm', 'click', () => {
   const color = colorOnTurn();
   const cb = qs('.confirm-build');
-  const {type, loc} = cb.dataset;
+  const type = cb.dataset.type;
+  const loc = + (cb.dataset.loc);
   const nFree = + (cb.dataset.freePiecesToGo ?? 0);
   qs('.selected').classList.remove('selected');
   cb.style.display = 'none';
@@ -440,6 +470,7 @@ ael('.confirm-build .confirm', 'click', () => {
       delete cb.dataset.freePiecesPlaced;
       makeCardPlayed(color, 'road-building');
     }
+    recomputeBadge('longest-road');
   } else {
     placeHouse(color, type, loc);
     if (gs.setup) {
@@ -458,15 +489,15 @@ function cancelBuildEntirely() {
   qs('.median .cancel').style.display = 'none';
   qs('.my-turn').style.display = 'block';
   const cbds = qs('.confirm-build').dataset;
-  if (! cbds.freePiecesToGo) return;
   const fpp = cbds.freePiecesPlaced;
+  if (! (+ cbds.freePiecesToGo)) return;
   delete cbds.freePiecesToGo;
   delete cbds.freePiecesPlaced;
   if (! fpp) return;
   for (const loc of fpp.split(' ')) removeRoad(loc);
   showExplanation(
     `You have canceled playing the Road Building card.
-     The roads that you had already placed in the
+     Any roads that you had already placed in the
      process of playing the card have been removed.`
   );
 }
@@ -626,6 +657,7 @@ function showTurnMenu() {
   );
   setTimeout(() => {
     tm.style.display = 'flex';
+    qs('.my-turn').style.display = 'block';
   }, config.delay);
 }
 ael('.my-turn', 'click', showTurnMenu);
@@ -793,9 +825,8 @@ function discard(color, cards) {
   adjustCards('resource');
 }
 ael('.median .discard', 'click', () => {
-  const button = qs('.median .discard');
-  const {color, n} = button.dataset;
-  showDiscardMenu(color, +n);
+  const bds = qs('.median .discard').dataset;
+  showDiscardMenu(bds.color, + bds.n);
 });
 
 ael('.play-development', 'click', () => {
@@ -889,7 +920,7 @@ ael('.buy-development button', 'click', () => {
 });
 ael('.confirm-buy-card .cancel', 'click', () => {
   qs('.confirm-buy-card').style.display = 'none';
-  showTurnMenu();
+  qs('.my-turn').style.display = 'block';
 });
 ael('.confirm-buy-card .confirm', 'click', () => {
   qs('.confirm-buy-card').style.display = 'none';
@@ -899,6 +930,9 @@ ael('.confirm-buy-card .confirm', 'click', () => {
   const card = qs(`.player-area.${color} ${sel}`);
   adjustCards('development');
   showCardViewer(card);
+  setTimeout(() => {
+    qs('.my-turn').style.display = 'block';
+  }, config.delay);
 });
 
 function playDevelopmentCard(cardName) {
@@ -1002,18 +1036,108 @@ function playDevelopmentCard(cardName) {
   }
 }
 
-// Attach button click listener to acquire-cards
-ael('.acquire-cards .confirm', 'click', () => {
-  const acm = qs('.acquire-cards');
-  acm.style.display = 'none';
-  qs('h2 span', acm).innerHTML = 'Cards Collected';
-  for (const quadrant of qsa('.quadrant', acm)) {
-    quadrant.style.visibility = 'visible';
+export function recomputeBadge(type) {
+  const prop = camelCase(type);
+  const size = {};
+  for (const c of playerColors) {
+    size[c] = type === 'largest-army' ?
+        gs.playedCards[c].knight : roadLength(c);
+  }
+  const n = Math.max(... Object.values(size));
+  if (n < badgeMinimum[type]) {
+    awardBadge(type, false);
+    return;
+  }
+  const leaders =
+      playerColors.filter(c => size[c] === n);
+  if (leaders.length > 1) {
+    if (! leaders.includes(gs[prop].color)) {
+      awardBadge(type, false);
+    } else gs[prop].n = n;
+  } else awardBadge(type, leaders[0], n);
+}
+// function recomputeLargestArmy() {
+//   const size = Object.fromEntries(playerColors.map(
+//     c => [c, gs.playedCards[c].knight]
+//   ));
+//   const nNew =
+//       Math.max(...playerColors.map(c => size[c]));
+//   if (nNew < 3) {
+//     awardBadge('largest-army', false);
+//     gs.largestArmy = null;
+//     return;
+//   }
+//   const colorsMax = playerColors.filter(
+//     c => size[c] === nNew
+//   );
+//   if (colorsMax.length > 1) {
+//     if (gs.largestArmy) gs.largestArmy.n = nNew;
+//     return;
+//   }
+//   const [colorNew] = colorsMax;
+//   const colorOld = gs.largestArmy.color;
+//   gs.largestArmy = {color: colorNew, n: nNew};
+//   if (colorOld === colorNew) return;
+//   awardBadge('largest-army', colorNew);
+//   const un = qs(`.player-area.${colorNew} .username`);
+//   showExplanation(
+//     `The Largest Army now belongs to
+//      ${un.innerHTML} (${colorNew}).`
+//   );
+// }
+// function recomputeLongestRoad() {
+//
+// }
+function roadLength(color) {
+  const c = color.substring(0, 1).toLowerCase();
+  const finished = [];
+  const working = sites.map((e, i) => (
+    {roads: [], end: i}
+  ));
+  while (working.length) {
+    const {roads, end} = working.pop();
+    const h = gs.houses[end].toLowerCase();
+    const blocked = h && h !== c;
+    const adjacent = blocked ? [] : edges.flatMap(
+      (e, i) => e.includes(end) ? [i] : []
+    );
+    const choices = adjacent.filter(
+      e => gs.roads[e] === c && ! roads.includes(e)
+    );
+    for (const choice of choices) {
+      const [otherEnd] =
+          edges[choice].filter(s => s !== end);
+      working.push(
+        {roads: [...roads, choice], end: otherEnd}
+      );
+    }
+    if (! choices.length) finished.push(roads);
+  }
+  return Math.max(...finished.map(x => x.length));
+}
+
+// Attach button click listeners to quad-box modals
+function hideAcquire(which) {
+  const a = qs(`.acquire-${which}`);
+  a.style.display = 'none';
+  let v = 'hidden';
+  if (which === 'acquire-cards') {
+    qs('h2 span', a).innerHTML = 'Cards Collected';
+    v = 'visible';
+  }
+  for (const quadrant of qsa('.quadrant', a)) {
+    quadrant.style.visibility = v;
     qs('.hand', quadrant).replaceChildren();
   }
+}
+ael('.acquire-cards .confirm', 'click', () => {
+  hideAcquire('cards');
 });
-
-// Attach button click listeners to steal-menu
+ael('.acquire-badge .confirm', 'click', () => {
+  hideAcquire('badge');
+  if (! gs.stealing) return;
+  qs('.steal-menu').style.display = 'flex';
+});
 function hideStealMenu() {
   const sm = qs('.steal-menu');
   sm.style.display = 'none';
@@ -1040,6 +1164,7 @@ ael('.steal-menu .confirm', 'click', () => {
   steal(from);
 });
 function steal(from) {
+  gs.stealing = false;
   const to = colorOnTurn();
   const handObj = gs.hands[from].resource;
   const handArr = Object.entries(handObj).flatMap(
@@ -1174,6 +1299,7 @@ ael('.median .steal', 'click', () => {
     boardClickable(false);
     qs('.median .cancel').style.display = 'none';
     qs('.my-turn').style.display = 'block';
+    recomputeBadge('longest-road');
   });
 }
 
@@ -1199,6 +1325,7 @@ export const gs = {
   setup: 2,
   turn: -1,
   roll: null,
+  stealing: false,
   playedDevelopmentOnTurn: false,
   houses: sites.map(s => ''),
   roads: edges.map(e => ''),
@@ -1208,7 +1335,9 @@ export const gs = {
   piecesLeft: {},
   bank: {},
   hands: {},
-  developmentDeck: []
+  developmentDeck: [],
+  largestArmy: {color: null, n: null},
+  longestRoad: {color: null, n: null},
 };
 
 // If exactly one desert, place robber there
@@ -1258,7 +1387,7 @@ for (const [i, color] of gs.order.entries()) {
   showPlayerName(color, 'Anonymous');
 }
 
-// Make quadrants on acquire-cards and steal-menu
+// Make quadrants on quad-box modals
 for (const area of qsa('section.player-area')) {
   const s = fromTemplate('quadrant');
   for (const color of playerColors) {
@@ -1269,12 +1398,14 @@ for (const area of qsa('section.player-area')) {
   qs('.username', s).innerHTML =
       qs('.username', area).innerHTML;
   const s0 = s.cloneNode(true);
+  const s1 = s.cloneNode(true);
   const fn = area.classList.contains('left') ?
       'prepend' : 'append';
   const where = area.classList.contains('top') ?
       'top' : 'bottom';
-  qs(`.acquire-cards .${where}`)[fn](s);
-  qs(`.steal-menu .${where}`)[fn](s0);
+  qs(`.steal-menu .${where}`)[fn](s);
+  qs(`.acquire-cards .${where}`)[fn](s0);
+  qs(`.acquire-badge .${where}`)[fn](s1);
 }
 
 // Attach quadrant click listeners to steal-menu

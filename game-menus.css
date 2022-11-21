@@ -108,6 +108,9 @@
 .modal.quad-box .middle {
   flex-direction: column;
 }
+.modal.quad-box h2 {
+  margin-top: 12px;
+}
 
 .quadrant {
   flex-direction: column;

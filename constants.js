@@ -32,6 +32,10 @@ export const vpCards = [
   'chapel', 'library', 'market',
   'palace', 'university',
 ];
+export const badgeMinimum = {
+  'largest-army': 3,
+  'longest-road': 5,
+};
 export const numberWords = [
   'zero', 'one', 'two', 'three', 'four',
   'five', 'six', 'seven', 'eight', 'nine',
