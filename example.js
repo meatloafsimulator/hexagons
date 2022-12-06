@@ -3,7 +3,7 @@ import {resources} from './constants.js';
 import {
   placeRoad, placeHouse,
   gainCard, makeCardPlayed, adjustCards,
-  awardBadge, showPlayerName, gs,
+  awardBadge, showPlayerName, passDice, gs,
 } from './hexagons.js';
 
 export function showExampleGame() {
@@ -12,7 +12,8 @@ export function showExampleGame() {
     orange: [19, 21, 29, 31, 40],
     blue: [18, 27, 35, 43, 45, 54],
     white: [5, 7, 12, 13, 14],
-    red: [6, 8, 41, 50],
+    // red: [6, 8, 41, 50],
+    red: [6, 8, 41, 50, 16, 24, 33],
   }
   for (const player in roads) {
     for (const edge of roads[player]) {
@@ -46,8 +47,8 @@ export function showExampleGame() {
   }
 
   const handsR = {
-    // orange: [2, 1, 1, 2, 3],
-    orange: [16, 16, 16, 14, 18],
+    orange: [2, 1, 1, 2, 3],
+    // orange: [16, 16, 16, 14, 18],
     blue:   [3, 0, 1, 0, 1],
     white:  [0, 3, 0, 1, 0],
     red:    [0, 0, 2, 3, 0],
@@ -116,8 +117,9 @@ export function showExampleGame() {
   gs.developmentDeck = ['knight', 'chapel'];
   gs.developmentsLeft = gs.developmentDeck.length;
 
-  // awardBadge('largest-army', 'red', 3);
-  awardBadge('longest-road', 'blue', 6);
+  awardBadge('largest-army', 'red', 3);
+  // awardBadge('longest-road', 'blue', 6);
+  awardBadge('longest-road', 'red', 7);
 
   const names = {
     orange: 'Graham',
@@ -137,5 +139,8 @@ export function showExampleGame() {
   qs('.player-area.orange .username').classList.add(
     'on-turn'
   );
+  passDice();
+
+  // gs.roll = [5, 1];
 
 }

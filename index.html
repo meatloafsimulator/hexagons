@@ -16,6 +16,9 @@
     <button type="button" class="my-turn primary">
       My Turn
     </button>
+    <button type="button" class="collect primary">
+      Collect
+    </button>
     <button type="button" class="discard primary">
       Discard
     </button>
@@ -62,8 +65,13 @@
   <section class="initial-phase centered">
     <h2>Start Turn</h2>
     <div class="choices centered">
-      <button type="button">Roll Dice</button>
-      <button type="button">
+      <button type="button" class="close">
+        Hide Turn Menu
+      </button>
+      <button type="button" class="roll">
+        Roll Dice
+      </button>
+      <button type="button" class="play-development">
         Play Development Card
       </button>
     </div>
@@ -105,13 +113,15 @@
       </button> -->
     </div>
   </section>
-  <section class="other-actions centered">
+  <section class="main-phase other-actions centered">
     <h2>Other Actions</h2>
     <div class="choices centered">
       <button type="button" class="close">
         Hide Turn Menu
       </button>
-      <button type="button">End My Turn</button>
+      <button type="button" class="end-turn">
+        End My Turn
+      </button>
     </div>
   </section>
 </section>
@@ -267,13 +277,29 @@
     <line x1="0" y1="1" x2="2" y2="1"/>
   </svg>
 </template>
+<template class="die">
+  <div class="die" data-value="0">
+    <svg viewbox="0 0 30 30">
+      <circle data-off="1 2 3" class="left top"/>
+      <circle data-off="1 2 3 4 5" class="left"/>
+      <circle data-off="1" class="left bottom"/>
+      <circle data-off="2 4 6"/>
+      <circle data-off="1" class="right top"/>
+      <circle data-off="1 2 3 4 5" class="right"/>
+      <circle data-off="1 2 3" class="right bottom"/>
+    </svg>
+  </div>
+</template>
 <template class="player-area">
   <section class="player-area">
     <div class="hand resource"></div>
     <div class="hand development"></div>
     <div class="houses"></div>
     <div class="roads"></div>
-    <div class="username"></div>
+    <div class="username-and-dice">
+      <div class="username"></div>      
+      <div class="dice centered"></div>
+    </div>
     <div class="hand played"></div>
     <div class="badges"></div>
   </section>

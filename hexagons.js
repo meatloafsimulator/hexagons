@@ -242,7 +242,7 @@ export function awardBadge(type, color, n) {
   for (const q of qsa('.quadrant', abm)) {
     q.style.visibility = 'hidden';
   }
-  function addCriterion(c, l) {
+  function addCriterion(c) {
     const q = qs(`.quadrant.${c}`, abm);
     q.style.visibility = 'visible';
     if (type === 'largest-army') {
@@ -251,12 +251,12 @@ export function awardBadge(type, color, n) {
       ph.classList.add('centered');
       qs('.hand', q).replaceWith(ph);
     } else {
-      qs('.hand', q).innerHTML =
-          l ? `Road Length: ${l}` : 'Road Broken';
+      const l = roadLength(c);
+      qs('.hand', q).innerHTML = `Road Length: ${l}`;
     }
   }
-  if (color) addCriterion(color, n);
-  if (colorOld) addCriterion(colorOld, nOld);
+  if (color) addCriterion(color);
+  if (colorOld) addCriterion(colorOld);
   abm.style.display = 'flex';
 }
 
@@ -470,7 +470,6 @@ ael('.confirm-build .confirm', 'click', () => {
       delete cb.dataset.freePiecesPlaced;
       makeCardPlayed(color, 'road-building');
     }
-    recomputeBadge('longest-road');
   } else {
     placeHouse(color, type, loc);
     if (gs.setup) {
@@ -478,6 +477,7 @@ ael('.confirm-build .confirm', 'click', () => {
       cb.dataset.type = 'road';
     }    
   }
+  recomputeBadge('longest-road');
   if (gs.setup) return;
   boardClickable(false);
   qs('.my-turn').style.display = 'block';
@@ -631,7 +631,7 @@ function enlargeBadge(badge) {
 
 function showTurnMenu() {
   const tm = qs('.turn-menu');
-  // tm.classList.toggle('before-roll', ! gs.roll);
+  tm.classList.toggle('before-roll', ! gs.roll);
   const color = colorOnTurn();
   const rHand = gs.hands[color].resource;
   for (const [x, xCost] of Object.entries(cost)) {
@@ -647,10 +647,11 @@ function showTurnMenu() {
   }
   const {development: nD, unripe: nU} =
       gs.nCards[color];
-  qs('.play-development', tm).classList.toggle(
-    'unavailable',
-    gs.playedDevelopmentOnTurn || ! (nD + nU)
-  );
+  const cantDevelop =
+      gs.playedDevelopmentOnTurn || ! (nD + nU);
+  for (const pdcb of qsa('.play-development', tm)) {
+    pdcb.classList.toggle('unavailable', cantDevelop);
+  }
   qs('.with-bank', tm).classList.toggle(
     'unavailable',
     ! Object.keys(bankTradeChoices(color)).length
@@ -664,7 +665,9 @@ ael('.my-turn', 'click', showTurnMenu);
 function hideTurnMenu() {
   qs('.turn-menu').style.display = 'none';
 }
-ael('.turn-menu .close', 'click', hideTurnMenu);
+for (const b of qsa('.turn-menu .close')) {
+  ael(b, 'click', hideTurnMenu);
+}
  
 ael('button.with-bank', 'click', () => {
   const button = qs('button.with-bank');
@@ -829,21 +832,22 @@ ael('.median .discard', 'click', () => {
   showDiscardMenu(bds.color, + bds.n);
 });
 
-ael('.play-development', 'click', () => {
-  const button = qs('.play-development');
-  if (button.classList.contains('unavailable')) {
-    const d = 'development card';
-    const explanation = gs.playedDevelopmentOnTurn ?
-        `You can play only one ${d} per turn.` :
-        `You don't have any ${d}s to play.`;
-    showExplanation(explanation);
-    return;
-  }
-  let sel = `.player-area.${colorOnTurn()}`;
-  sel += ' .hand.development .card';
-  const card = qs(`${sel}:not(.vp):not(.unripe)`);
-  showCardViewer(card ?? qs(sel), true);  
-});
+for (const pdcb of qsa('.play-development')) {
+  ael(pdcb, 'click', () => {
+    if (pdcb.classList.contains('unavailable')) {
+      const d = 'development card';
+      const explanation = gs.playedDevelopmentOnTurn ?
+          `You can play only one ${d} per turn.` :
+          `You don't have any ${d}s to play.`;
+      showExplanation(explanation);
+      return;
+    }
+    let sel = `.player-area.${colorOnTurn()}`;
+    sel += ' .hand.development .card';
+    const card = qs(`${sel}:not(.vp):not(.unripe)`);
+    showCardViewer(card ?? qs(sel), true);  
+  });
+}
 
 function onPort(color) {
   const c = color.substring(0, 1);
@@ -1045,49 +1049,17 @@ export function recomputeBadge(type) {
   }
   const n = Math.max(... Object.values(size));
   if (n < badgeMinimum[type]) {
-    awardBadge(type, false);
+    awardBadge(type, null);
     return;
   }
   const leaders =
       playerColors.filter(c => size[c] === n);
   if (leaders.length > 1) {
     if (! leaders.includes(gs[prop].color)) {
-      awardBadge(type, false);
+      awardBadge(type, null);
     } else gs[prop].n = n;
   } else awardBadge(type, leaders[0], n);
 }
-// function recomputeLargestArmy() {
-//   const size = Object.fromEntries(playerColors.map(
-//     c => [c, gs.playedCards[c].knight]
-//   ));
-//   const nNew =
-//       Math.max(...playerColors.map(c => size[c]));
-//   if (nNew < 3) {
-//     awardBadge('largest-army', false);
-//     gs.largestArmy = null;
-//     return;
-//   }
-//   const colorsMax = playerColors.filter(
-//     c => size[c] === nNew
-//   );
-//   if (colorsMax.length > 1) {
-//     if (gs.largestArmy) gs.largestArmy.n = nNew;
-//     return;
-//   }
-//   const [colorNew] = colorsMax;
-//   const colorOld = gs.largestArmy.color;
-//   gs.largestArmy = {color: colorNew, n: nNew};
-//   if (colorOld === colorNew) return;
-//   awardBadge('largest-army', colorNew);
-//   const un = qs(`.player-area.${colorNew} .username`);
-//   showExplanation(
-//     `The Largest Army now belongs to
-//      ${un.innerHTML} (${colorNew}).`
-//   );
-// }
-// function recomputeLongestRoad() {
-//
-// }
 function roadLength(color) {
   const c = color.substring(0, 1).toLowerCase();
   const finished = [];
@@ -1116,12 +1088,92 @@ function roadLength(color) {
   return Math.max(...finished.map(x => x.length));
 }
 
+export function passDice() {
+  for (const d of qsa('.dice .die')) d.remove();
+  for (let i = 0; i < 2; i++) {
+    qs(`.player-area.${colorOnTurn()} .dice`).append(
+      fromTemplate('die')
+    );
+  }
+}
+function roll() {
+  gs.roll = [];
+  for (const d of qsa('.dice .die')) {
+    const value = draw(seq(6)) + 1;
+    d.dataset.value = value;
+    gs.roll.push(value);
+  }
+  hideTurnMenu();
+  qs('.my-turn').style.display = 'none';
+  qs('.collect').style.display = 'block';
+}
+ael('.roll', 'click', roll);
+function collect() {
+  qs('.collect').style.display = 'none';
+  qs('.my-turn').style.display = 'block';
+  const colorAbbr = Object.fromEntries(
+    playerColors.map(x => [x.substring(0, 1), x])
+  );
+  const resourceCountObj = Object.fromEntries(
+    resources.map(r => [r, 0])
+  );
+  const result = Object.fromEntries(
+    playerColors.map(x => [x, {...resourceCountObj}])
+  );
+  const total = {...resourceCountObj};
+  for (const [i, r] of board.hexes.entries()) {
+    if (gs.robber === i) continue;
+    if (board.chits[i] !== sum(gs.roll)) continue;
+    for (const s of hexSites[i]) {
+      const house = gs.houses[s];
+      if (! house) continue;
+      const c = house.toLowerCase();
+      const color = colorAbbr[c];
+      const n = c === house ? 1 : 2;
+      result[color][r] += n;
+      total[r] += n;
+    }
+  }
+  const notEnough = [];
+  for (const [r, t] of Object.entries(total)) {
+    if (t <= gs.bank[r]) continue;
+    const cc = playerColors.filter(x => result[x][r]);
+    if (cc.length > 1) {
+      for (const c of cc) result[c][r] = 0;
+    } else result[cc[0]][r] = gs.bank[r];
+    notEnough.push(r);
+  }
+  if (notEnough.length) {
+    const text = notEnough.join(' or ');
+    showExplanation(
+      `The bank doesn't have enough ${text}.`
+    );
+  }
+  const acm = qs('.acquire-cards');
+  const span = qs('h2 span', acm);
+  span.innerHTML = 'Cards Collected';
+  for (const [c, o] of Object.entries(result)) {
+    const hand = qs(`.quadrant.${c} .hand`, acm);
+    for (const [r, n] of Object.entries(o)) {
+      for (let i = 0; i < n; i++) {
+        hand.append(makeCard('resource', r));
+        gs.bank[r]--;
+        const card = gs.control[c] ? r : null;
+        gainCard(c, 'resource', card);
+      }
+    }
+  }
+  acm.style.display = 'flex';
+  adjustCards('resource');
+}
+ael('.collect', 'click', collect);
+
 // Attach button click listeners to quad-box modals
 function hideAcquire(which) {
   const a = qs(`.acquire-${which}`);
   a.style.display = 'none';
   let v = 'hidden';
-  if (which === 'acquire-cards') {
+  if (which === 'cards') {
     qs('h2 span', a).innerHTML = 'Cards Collected';
     v = 'visible';
   }
@@ -1461,9 +1513,12 @@ gs.bank = Object.fromEntries(resources.map(
 import {showExampleGame} from './example.js';
 showExampleGame();
 
+// nextSetupTurn();
+
 // showDiscardMenu('orange');
 // qs('.acquire-cards').style.display = 'flex';
 
-// nextSetupTurn();
 
+console.log(board);
 console.log(gs);
+console.log(hexSites);
