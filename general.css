@@ -56,6 +56,7 @@ button {
   cursor: pointer;
   width: 228px;
   margin: 12px;
+  outline: none;
 }
 button:is(.cancel, .close):not(.continue) {
   background: #ec6f7a;

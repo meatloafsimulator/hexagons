@@ -1469,8 +1469,6 @@ document.addEventListener('keydown', e => {
   keys.all = Object.values(keys).flat();
   if (! keys.all.includes(e.which)) return;
   e.preventDefault();
-  // if (keys.cancel.includes(e.which)) pressCancel();
-  // if (keys.confirm.includes(e.which)) pressConfirm();
   for (const [b, k] of Object.entries(keys)) {
     if (k.includes(e.which)) pressButton(b);
   }
@@ -1481,10 +1479,6 @@ function pressButton(type) {
   if (type === 'confirm') typeSel += ', .continue';
   function isUp(el) {
     return getComputedStyle(el).display !== 'none';
-  }
-  if (isUp(qs('.explanation'))) {
-    qs(`.explanation :is(${typeSel})`)?.click();
-    return;
   }
   const buttonContainers = [
     '.explanation',
