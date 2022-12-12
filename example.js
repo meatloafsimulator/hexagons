@@ -136,9 +136,9 @@ export function showExampleGame() {
   gs.setup = 0;
   gs.turn = gs.order.indexOf('orange');
   // gs.playedDevelopmentOnTurn = true;
-  qs('.player-area.orange .username').classList.add(
-    'on-turn'
-  );
+  // qs('.player-area.orange .username').classList.add(
+  //   'on-turn'
+  // );
   passDice();
 
   // gs.roll = [5, 1];

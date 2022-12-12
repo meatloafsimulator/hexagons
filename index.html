@@ -13,16 +13,16 @@
 <h1>Settlers of Catan</h1>
 <section class="side-zone left">
   <section class="median">
-    <button type="button" class="my-turn primary">
+    <button type="button" class="my-turn continue">
       My Turn
     </button>
-    <button type="button" class="collect primary">
+    <button type="button" class="collect continue">
       Collect
     </button>
-    <button type="button" class="discard primary">
+    <button type="button" class="discard continue">
       Discard
     </button>
-    <button type="button" class="steal primary">
+    <button type="button" class="steal continue">
       Steal
     </button>
     <button type="button" class="cancel">
@@ -45,19 +45,19 @@
   <div class="hand centered"></div>
   <div class="zoomed"></div>
   <div>
-    <button type="button" class="close">
+    <button type="button" class="continue close">
       Return to Game
     </button>
     <button type="button" class="cancel">
       Cancel
     </button>
-    <button type="button" class="play confirm">
+    <button type="button" class="confirm">
       Play This Card
     </button>
   </div>
 </section>
 <section class="badge-viewer modal">
-  <button type="button" class="close">
+  <button type="button" class="continue close">
     Return to Game
   </button>
 </section>
@@ -138,10 +138,10 @@
     </div>
   </section>
   <div>
-    <button type="button" class="close cancel">
+    <button type="button" class="cancel">
       Cancel
     </button>
-    <button type="button" class="make-trade confirm">
+    <button type="button" class="confirm">
       Make Trade
     </button>
   </div>
@@ -150,7 +150,7 @@
   <div class="top centered"></div>
   <div class="middle centered">
     <h2>Resource <span>Cards Collected</span></h2>
-    <button type="button" class="confirm">
+    <button type="button" class="continue close">
       Continue
     </button>
   </div>
@@ -160,7 +160,7 @@
   <div class="top centered"></div>
   <div class="middle centered">
     <h2><span>Badge</span> Has Changed</h2>
-    <button type="button" class="confirm">
+    <button type="button" class="continue close">
       Continue
     </button>
   </div>
@@ -171,7 +171,7 @@
   <div class="middle centered">
     <h2>Choose a Player From Whom to Steal a Card</h2>
     <div>
-      <button type="button" class="close cancel">
+      <button type="button" class="close">
         Hide Menu
       </button>
       <button type="button" class="confirm">
@@ -181,14 +181,29 @@
   </div>
   <div class="bottom centered"></div>
 </section>
+<section class="discard-overview quad-box modal">
+  <div class="top centered"></div>
+  <div class="middle centered">
+    <h2>Resource Cards Discarded</h2>
+    <div>
+      <button type="button" class="close">
+        Hide Menu
+      </button>
+      <button type="button" class="continue">
+        Continue
+      </button>
+    </div>
+  </div>
+  <div class="bottom centered"></div>
+</section>
 <section class="discard-menu card-select modal">
   <h2>Choose <span>Zero Cards</span> to Discard</h2>
   <div class="choices centered"></div>
   <div>
-    <button type="button" class="close cancel">
+    <button type="button" class="close">
       Hide Menu
     </button>
-    <button type="button" class="discard confirm">
+    <button type="button" class="confirm">
       Discard Cards
     </button>
   </div>
@@ -230,7 +245,7 @@
     <button type="button" class="cancel">
       Cancel
     </button>
-    <button type="button" class="confirm">
+    <button type="button" class="play-anyway">
       Play Anyway
     </button>
   </div>
@@ -239,7 +254,9 @@
   <div class="prompt">
     The game is loading.
   </div>
-  <button>OK</button>
+  <button type="button" class="continue close">
+    OK
+  </button>
 </section>
 <template class="dialog-confirm-cancel">
   <div class="dialog-confirm-cancel centered">
@@ -415,4 +432,7 @@
 </template>
 <template class="ui-text confirm-robber">
   Move here?
+</template>
+<template class="ui-text confirm-end-turn">
+  End turn?
 </template>

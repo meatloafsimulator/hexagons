@@ -37,12 +37,12 @@
   width: 140px;
 }
 .player-area.left .username.on-turn::after {
-  margin-left: 5px;
-  content: "⇦";
+/*  margin-left: 5px;*/
+/*  content: "⇦";*/
 }
 .player-area.right .username.on-turn::before {
-  margin-right: 5px;
-  content: "⇨";
+/*  margin-right: 5px;*/
+/*  content: "⇨";*/
 }
 .player-area .dice {
   height: 40px;
@@ -57,6 +57,11 @@
   border-radius: 4px;
   border: solid 1px #000;
   background: #fed;
+}
+.die.rolled {
+  --t: 0.926s;
+  transform: rotate(720deg);
+  transition: transform var(--t) var(--t);
 }
 .die circle {
   r: 3.5;
@@ -139,7 +144,7 @@
   width: 140px;
   margin: 0;
 }
-.median button:not(.my-turn, .options) {
+.median button:not(.options) {
   display: none;
 }
 

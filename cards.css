@@ -174,12 +174,12 @@
   outline: solid 6px var(--color-gold);
 }
 
-:is(.acquire-cards, .acquire-badge) .hand {
+.quad-box .hand {
   min-height: 72px;
   width: 320px;
   flex-wrap: wrap;
 }
-:is(.acquire-cards, .acquire-badge) .card {
+.quad-box .card {
   --w: 36px;
   margin: 2px;
 }
@@ -187,12 +187,12 @@
   display: none;
 }
 
-.steal-menu .hand {
+.quad-box.steal-menu .hand {
   min-height: 60px;
   width: 336px;
   flex-wrap: wrap;
 }
-.steal-menu .card {
+.quad-box.steal-menu .card {
   --w: 24px;
   margin: 2px;
 }

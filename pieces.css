@@ -42,12 +42,19 @@
   --h: 48px;
   --w: 48px;
 }
+.on-board .settlement {
+  transform: translateY(-2.5px);
+}
 .city {
   --h: 64px;
   --w: 64px;
 }
+.on-board .city {
+  --xfxl: translate(1px, -4.5px);
+  transform: var(--xfxl);
+}
 .city.flipped {
-  transform: scaleX(-1);
+  transform: scaleX(-1) var(--xfxl, );
 }
 .piece polygon {
   fill: var(--color-player);
@@ -56,8 +63,8 @@
 }
 
 .site {
-  --h: 48px;
-  --w: 48px;
+  --h: 54px;
+  --w: 54px;
 }
 .site:is(:hover, .selected) {
   background: var(--color-hover);

@@ -57,10 +57,10 @@ button {
   width: 228px;
   margin: 12px;
 }
-button.cancel {
+button:is(.cancel, .close):not(.continue) {
   background: #ec6f7a;
 }
-button:is(.confirm, .primary) {
+button:is(.confirm, .continue) {
   background: #6cb088;
 }
 button.unavailable {

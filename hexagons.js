@@ -216,6 +216,20 @@ export function adjustCards(kind) {
     }
   }
 }
+function ripenDevelopmentCards() {
+  const color = colorOnTurn();
+  const nCards = gs.nCards[color];
+  nCards.development += nCards.unripe;
+  nCards.unripe = 0;
+  const hands = gs.hands[color];
+  for (const x of Object.keys(hands.unripe)) {
+    hands.development[x] += hands.unripe[x];
+    hands.unripe[x] = 0;
+  }
+  for (const c of qsa('.unripe')) {
+    c.classList.remove('unripe');
+  }
+}
 
 function makeBadge(type) {
   const badge = fromTemplate('badge');
@@ -301,33 +315,6 @@ function boardClickable(isClickable) {
   qs('.board').style.zIndex = isClickable ? 2 : 0;
 }
 
-function colorOnTurn() {
-  return gs.order[gs.turn];
-}
-function nextSetupTurn() {
-  const cb = qs('.confirm-build');
-  if (gs.setup === 2) gs.turn++; else gs.turn--;
-  if (gs.turn === gs.order.length) {
-    gs.setup--;
-    gs.turn--;
-    cb.dataset.freePiecesToGo = 1;
-  } else if (gs.turn === -1) {
-    gs.setup--;
-    gs.turn++;
-    boardClickable(false);
-    nextTurn();
-    delete cb.dataset.freePiecesToGo;
-    return;
-  }
-  sitesClickable(colorOnTurn(), 'settlement');
-  cb.dataset.type = 'settlement';
-  cb.dataset.freePiecesToGo = 2;
-  boardClickable(true);
-}
-function nextTurn() {
-  
-}
-
 export function clickSite(site) {
   sitesClickable(false);
   qs(`.site-${site}`).classList.add('selected');
@@ -357,12 +344,17 @@ export function clickHex(hex) {
 }
 
 // Add confirm-cancel dialogs
-for (const x of ['robber', 'build', 'buy-card']) {
-  const cb = fromTemplate('dialog-confirm-cancel');
-  cb.classList.add(`confirm-${x}`);
-  qs('.prompt', cb).innerHTML =
-      fromTemplate(`ui-text.confirm-${x}`);
-  qs('.board').append(cb);
+{
+  const ccd = [
+    'robber', 'build', 'buy-card', 'end-turn',
+  ];
+  for (const x of ccd) {
+    const cb = fromTemplate('dialog-confirm-cancel');
+    cb.classList.add(`confirm-${x}`);
+    qs('.prompt', cb).innerHTML =
+        fromTemplate(`ui-text.confirm-${x}`);
+    qs('.board').append(cb);
+  }
 }
 function showConfirm(type, svgCoords) {
   const cb = qs(`.confirm-${type}`);
@@ -375,13 +367,70 @@ function showConfirm(type, svgCoords) {
   qs('.my-turn').style.display = 'none';
 }
 
+function colorOnTurn() {
+  return gs.order[gs.turn];
+}
+function nextSetupTurn() {
+  const cb = qs('.confirm-build');
+  if (gs.setup === 2) gs.turn++; else gs.turn--;
+  if (gs.turn === gs.order.length) {
+    gs.setup--;
+    gs.turn--;
+    cb.dataset.freePiecesToGo = 1;
+  } else if (gs.turn === -1) {
+    gs.setup--;
+    gs.turn++;
+    boardClickable(false);
+    nextTurn();
+    delete cb.dataset.freePiecesToGo;
+    return;
+  }
+  sitesClickable(colorOnTurn(), 'settlement');
+  cb.dataset.type = 'settlement';
+  cb.dataset.freePiecesToGo = 2;
+  boardClickable(true);
+}
+function nextTurn() {
+  ripenDevelopmentCards();
+  gs.turn = (gs.turn + 1) % gs.order.length;
+  gs.playedDevelopmentOnTurn = false;
+  gs.roll = null;
+  passDice();
+  if (gs.control[colorOnTurn()]) {
+    qs('.median .my-turn').style.display = 'block';
+  }
+}
+ael('.end-turn', 'click', () => {
+  qs('.turn-menu').style.display = 'none';
+  showConfirm('end-turn');
+});
+ael('.confirm-end-turn .cancel', 'click', () => {
+  qs('.confirm-end-turn').style.display = 'none';
+  qs('.median .my-turn').style.display = 'block';
+});
+ael('.confirm-end-turn .confirm', 'click', () => {
+  qs('.confirm-end-turn').style.display = 'none';
+  nextTurn();
+});
+
+function beginRobberMove(type, skipPrompt) {
+  if (! skipPrompt) {
+    showExplanation(
+      'Select where you want to move the robber.'
+    );    
+  }
+  boardClickable(true);
+  qs('.board svg').classList.add('moving-robber');
+  if (type) qs('.confirm-robber').dataset.type = type;
+}
 ael('.confirm-robber .cancel', 'click', () => {
   const cr = qs('.confirm-robber');
   qs('.selected').classList.remove('selected');
   cr.style.display = 'none';
-  boardClickable(true);
-  qs('.board svg').classList.add('moving-robber');
-  qs('.median .cancel').style.display = 'block';
+  beginRobberMove(null, true);
+  if (cr.dataset.type === 'knight') {
+    qs('.median .cancel').style.display = 'block';
+  }
 });
 ael('.confirm-robber .confirm', 'click', () => {
   const cr = qs('.confirm-robber');
@@ -435,6 +484,7 @@ ael('.confirm-build .cancel', 'click', () => {
   if (cb.dataset.type === 'road') {
     edgesClickable(color);
   } else sitesClickable(color, cb.dataset.type);
+  if (gs.setup) return;
   qs('.median .cancel').style.display = 'block';
 });
 ael('.confirm-build .confirm', 'click', () => {
@@ -528,14 +578,14 @@ function showCardViewer(card, playing) {
     b.style.display = 'none';
   }
   if (playing) {
-    qs('.cancel', cv).style.display = 'inline';
-    qs('.play', cv).style.display = 'inline';
-    qs('.play', cv).classList.toggle(
+    qs('.cancel', cv).style.display = 'block';
+    qs('.confirm', cv).style.display = 'block';
+    qs('.confirm', cv).classList.toggle(
       'unavailable',
       card.classList.contains('vp') ||
           card.classList.contains('unripe')
     );
-  } else qs('.close', cv).style.display = 'inline';
+  } else qs('.close', cv).style.display = 'block';
   setTimeout(() => {
     hideTurnMenu();
     cv.style.display = 'flex';
@@ -549,7 +599,7 @@ function hideCardViewer() {
 }
 ael('.card-viewer .close', 'click', hideCardViewer);
 ael('.card-viewer .cancel', 'click', hideCardViewer);
-ael('.card-viewer .play', 'click', () => {
+ael('.card-viewer .confirm', 'click', () => {
   const cv = qs('.card-viewer');
   const card = qs('.selected', cv);
   if (card.classList.contains('vp')) {
@@ -562,8 +612,8 @@ ael('.card-viewer .play', 'click', () => {
   }
   if (card.classList.contains('unripe')) {
     showExplanation(
-      `You can't play a development card
-       that you purchased on the same turn.`
+      `You can't play a development card that<br>
+       you purchased on the same turn.`
     );
     return;
   }
@@ -577,7 +627,7 @@ function swapCardViewer(card) {
   const cNew = enlargeCard(card);
   setTimeout(() => {
     z.replaceChildren(cNew);
-    qs('.play', cv).classList.toggle(
+    qs('.confirm', cv).classList.toggle(
       'unavailable',
       card.classList.contains('vp') ||
           card.classList.contains('unripe')      
@@ -679,7 +729,7 @@ ael('button.with-bank', 'click', () => {
     return;
   }
   const twbm = qs('.trade-menu.with-bank');
-  const mtbcl = qs('.make-trade', twbm).classList;
+  const mtbcl = qs('.confirm', twbm).classList;
   mtbcl.add('unavailable');
   qs('.note', twbm).style.display = 'none';
   const color = colorOnTurn();
@@ -730,10 +780,10 @@ function hideBankTradeMenu() {
     c.replaceChildren();
   }
 }
-ael('.with-bank .close', 'click', hideBankTradeMenu);
-ael('.with-bank .make-trade', 'click', () => {
+ael('.with-bank .cancel', 'click', hideBankTradeMenu);
+ael('.with-bank .confirm', 'click', () => {
   const twbm = qs('.trade-menu.with-bank');
-  const bcl = qs('.make-trade', twbm).classList;
+  const bcl = qs('.confirm', twbm).classList;
   if (bcl.contains('unavailable')) {
     const e = qsa('.selected', twbm).length < 2 ?
         `Select which resources you want to trade.` :
@@ -752,84 +802,6 @@ ael('.with-bank .make-trade', 'click', () => {
   gs.bank[receive]--;
   adjustCards('resource');
   hideBankTradeMenu();
-});
-
-function showDiscardMenu(color, nToDiscard) {
-  const dm = qs('.discard-menu');
-  dm.dataset.color = color;
-  const db = qs('.discard', dm);
-  db.classList.add('unavailable');
-  const hand = qsa(
-    `.player-area.${color} .hand.resource .card`
-  );
-  const n = nToDiscard ?? Math.floor(hand.length / 2);
-  const nText = numberWords[n] ?? n;
-  qs('h2 span', dm).innerHTML =
-      n === 1 ? 'one card' : `${nText} cards`;
-  for (const c of hand) {
-    const h = document.createElement('div');
-    h.classList.add('hand', 'centered');
-    h.dataset.resource = c.dataset.name;
-    h.append(c.cloneNode(true));
-    ael(h, 'click', () => {
-      h.classList.toggle('selected');
-      db.classList.toggle(
-        'unavailable',
-        qsa('.selected', dm).length !== n
-      );
-    });
-    qs('.choices', dm).append(h);
-  }
-  setTimeout(() => {
-    dm.style.display = 'flex';
-    qs('.median .my-turn').style.display = 'none';
-    const medianDiscard = qs('.median .discard');
-    medianDiscard.style.display = 'block';
-    medianDiscard.dataset.color = color;
-    medianDiscard.dataset.n = n;
-  }, config.delay);
-}
-function hideDiscardMenu() {
-  const dm = qs('.discard-menu');
-  dm.style.display = 'none';
-  delete dm.dataset.color;
-  qs('.choices', dm).replaceChildren();
-  qs('h2 span', dm).innerHTML = 'zero cards';
-}
-ael('.discard-menu .close', 'click', hideDiscardMenu);
-ael('.discard-menu .discard', 'click', () => {
-  const button = qs('.discard-menu .discard');
-  if (button.classList.contains('unavailable')) {
-    showExplanation(
-      `Select the right number of cards to discard.`
-    );
-    return;
-  }
-  const color = qs('.discard-menu').dataset.color;
-  const dArr = qsa('.discard-menu .selected').map(
-    x => x.dataset.resource
-  );
-  hideDiscardMenu();
-  qs('.median .discard').style.display = 'none';
-  if (gs.control[colorOnTurn()]) {
-    qs('.my-turn').style.display = 'block';
-  }
-  discard(color, dArr);
-});
-function discard(color, cards) {
-  const hand =
-      qs(`.player-area.${color} .hand.resource`);
-  for (const card of cards) {
-    gs.nCards[color].resource--;
-    gs.hands[color].resource[card]--;
-    gs.bank[card]++;
-    qs(`.${card}, .unknown`, hand).remove();
-  }
-  adjustCards('resource');
-}
-ael('.median .discard', 'click', () => {
-  const bds = qs('.median .discard').dataset;
-  showDiscardMenu(bds.color, + bds.n);
 });
 
 for (const pdcb of qsa('.play-development')) {
@@ -929,6 +901,7 @@ ael('.confirm-buy-card .cancel', 'click', () => {
 ael('.confirm-buy-card .confirm', 'click', () => {
   qs('.confirm-buy-card').style.display = 'none';
   const color = colorOnTurn();
+  payCost('development');
   gainCard(color, 'unripe', drawDevelopmentCard());
   const sel = '.hand.development .card:last-child';
   const card = qs(`.player-area.${color} ${sel}`);
@@ -941,15 +914,10 @@ ael('.confirm-buy-card .confirm', 'click', () => {
 
 function playDevelopmentCard(cardName) {
   if (cardName === 'knight') {
-    showExplanation(
-      'Select where you want to move the robber.'
-    );
     hideCardViewer();
-    boardClickable(true);
-    qs('.board svg').classList.add('moving-robber');
-    qs('.confirm-robber').dataset.type = 'knight';
     qs('.my-turn').style.display = 'none';
     qs('.median .cancel').style.display = 'block';
+    beginRobberMove('knight');
   }
   if (cardName === 'year-of-plenty') {
     const nCards = 2;
@@ -1097,15 +1065,21 @@ export function passDice() {
   }
 }
 function roll() {
+  qs('.my-turn').style.display = 'none';
+  hideTurnMenu();
   gs.roll = [];
   for (const d of qsa('.dice .die')) {
+    // d.classList.add('rolled');
     const value = draw(seq(6)) + 1;
     d.dataset.value = value;
     gs.roll.push(value);
   }
-  hideTurnMenu();
-  qs('.my-turn').style.display = 'none';
-  qs('.collect').style.display = 'block';
+  if (sum(gs.roll) === 7) {
+    makeDiscardOverview();
+    if (Object.keys(gs.discard).length) {
+      qs('.median .discard').style.display = 'block';
+    } else beginRobberMove('roll');
+  } else qs('.collect').style.display = 'block';
 }
 ael('.roll', 'click', roll);
 function collect() {
@@ -1167,6 +1141,128 @@ function collect() {
   adjustCards('resource');
 }
 ael('.collect', 'click', collect);
+ael('.median .discard', 'click', () => {
+  qs('.discard-overview').style.display = 'flex';
+});
+function makeDiscardOverview() {
+  const dcov = qs('.discard-overview');
+  qs('.continue', dcov).classList.add('unavailable');
+  for (const c of playerColors) {
+    const n = Math.floor(gs.nCards[c].resource / 2);
+    const quadrant = qs(`.quadrant.${c}`, dcov);
+    if (n > 3) {
+      gs.discard[c] = null;
+      quadrant.style.visibility = 'visible';
+      const hand = qs('.hand', quadrant);
+      hand.replaceChildren();
+      const nText = numberWords[n] ?? n;
+      if (gs.control[c]) {
+        const b = document.createElement('button');
+        b.innerHTML = `Discard ${nText}`;
+        b.style.textTransform = 'capitalize';
+        ael(b, 'click', () => showDiscardMenu(c, n));
+        hand.append(b);
+      } else {
+        hand.innerHTML = `(must discard ${nText})`;
+      }
+    } else quadrant.style.visibility = 'hidden';
+  }
+}
+function showDiscardMenu(color, nToDiscard) {
+  const dm = qs('.discard-menu');
+  dm.dataset.color = color;
+  const confirmButton = qs('.confirm', dm);
+  confirmButton.classList.add('unavailable');
+  const hand = qsa(
+    `.player-area.${color} .hand.resource .card`
+  );
+  const n = nToDiscard ?? Math.floor(hand.length / 2);
+  const nText = numberWords[n] ?? n;
+  qs('h2 span', dm).innerHTML =
+      n === 1 ? 'one card' : `${nText} cards`;
+  for (const c of hand) {
+    const h = document.createElement('div');
+    h.classList.add('hand', 'centered');
+    h.dataset.resource = c.dataset.name;
+    h.append(c.cloneNode(true));
+    ael(h, 'click', () => {
+      h.classList.toggle('selected');
+      confirmButton.classList.toggle(
+        'unavailable',
+        qsa('.selected', dm).length !== n
+      );
+    });
+    qs('.choices', dm).append(h);
+  }
+  setTimeout(() => {
+    qs('.discard-overview').style.display = 'none';
+    dm.style.display = 'flex';
+  }, config.delay);
+}
+ael('.discard-overview .close', 'click', () => {
+  qs('.discard-overview').style.display = 'none';
+});
+ael('.discard-overview .continue', 'click', () => {
+  const button = qs('.discard-overview .continue');
+  if (button.classList.contains('unavailable')) {
+    showExplanation(
+      'Some players still need to discard.'
+    );
+    return;
+  }
+  qs('.median .discard').style.display = 'none';
+  qs('.discard-overview').style.display = 'none';
+  beginRobberMove('roll');
+});
+function hideDiscardMenu() {
+  const dm = qs('.discard-menu');
+  dm.style.display = 'none';
+  delete dm.dataset.color;
+  qs('.choices', dm).replaceChildren();
+  qs('h2 span', dm).innerHTML = 'zero cards';
+}
+ael('.discard-menu .close', 'click', hideDiscardMenu);
+ael('.discard-menu .confirm', 'click', () => {
+  const button = qs('.discard-menu .confirm');
+  if (button.classList.contains('unavailable')) {
+    showExplanation(
+      `Select the right number of cards to discard.`
+    );
+    return;
+  }
+  const color = qs('.discard-menu').dataset.color;
+  const dArr = qsa('.discard-menu .selected').map(
+    x => x.dataset.resource
+  );
+  gs.discard[color] = dArr;
+  const dcov = qs('.discard-overview');
+  const hand = qs(`.quadrant.${color} .hand`, dcov);
+  hand.replaceChildren();
+  for (const r of dArr) {
+    hand.append(makeCard('resource', r));
+  }
+  if (Object.values(gs.discard).every(x => x)) {
+    const b = qs('.continue', dcov);
+    b.classList.remove('unavailable');
+    for (const [c, a] of Object.entries(gs.discard)) {
+      discard(c, a);
+    }
+    gs.discard = {};
+  }
+  hideDiscardMenu();
+  dcov.style.display = 'flex';
+});
+function discard(color, cards) {
+  const hand =
+      qs(`.player-area.${color} .hand.resource`);
+  for (const card of cards) {
+    gs.nCards[color].resource--;
+    gs.hands[color].resource[card]--;
+    gs.bank[card]++;
+    qs(`.${card}, .unknown`, hand).remove();
+  }
+  adjustCards('resource');
+}
 
 // Attach button click listeners to quad-box modals
 function hideAcquire(which) {
@@ -1182,10 +1278,10 @@ function hideAcquire(which) {
     qs('.hand', quadrant).replaceChildren();
   }
 }
-ael('.acquire-cards .confirm', 'click', () => {
+ael('.acquire-cards .continue', 'click', () => {
   hideAcquire('cards');
 });
-ael('.acquire-badge .confirm', 'click', () => {
+ael('.acquire-badge .continue', 'click', () => {
   hideAcquire('badge');
   if (! gs.stealing) return;
   qs('.steal-menu').style.display = 'flex';
@@ -1225,7 +1321,7 @@ function steal(from) {
   if (! handArr.length) return;
   const r = draw(handArr);
   handObj[r]--;
-  gs.hands[to].resource[r]++;
+  gs.nCards[from].resource--;
   const handEl =
       qs(`.player-area.${from} .hand.resource`);
   qs(`.${r}, .unknown`, handEl).remove();
@@ -1342,7 +1438,7 @@ ael('.median .steal', 'click', () => {
     ffrm.style.display = 'none';
     cancelBuildEntirely();
   });
-  ael(qs('.confirm', ffrm), 'click', () => {
+  ael(qs('.play-anyway', ffrm), 'click', () => {
     ffrm.style.display = 'none';
     const cbds = qs('.confirm-build').dataset;
     delete cbds.freePiecesToGo;
@@ -1360,8 +1456,56 @@ function showExplanation(text) {
   qs('.prompt', explanation).innerHTML = text;
   explanation.style.display = 'flex';
 }
-ael('.explanation button', 'click', () => {
+ael('.explanation .close', 'click', () => {
   qs('.explanation').style.display = 'none';
+});
+
+// Attach keyboard listeners
+document.addEventListener('keydown', e => {
+  const keys = {
+    cancel: [27, 88, 90],   // escape x z
+    confirm: [13, 32],      // enter space
+  };
+  keys.all = Object.values(keys).flat();
+  if (! keys.all.includes(e.which)) return;
+  e.preventDefault();
+  // if (keys.cancel.includes(e.which)) pressCancel();
+  // if (keys.confirm.includes(e.which)) pressConfirm();
+  for (const [b, k] of Object.entries(keys)) {
+    if (k.includes(e.which)) pressButton(b);
+  }
+});
+function pressButton(type) {
+  let typeSel = `.${type}`;
+  if (type === 'cancel') typeSel += ', .close';
+  if (type === 'confirm') typeSel += ', .continue';
+  function isUp(el) {
+    return getComputedStyle(el).display !== 'none';
+  }
+  if (isUp(qs('.explanation'))) {
+    qs(`.explanation :is(${typeSel})`)?.click();
+    return;
+  }
+  const buttonContainers = [
+    '.explanation',
+    '.modal',
+    '.dialog-confirm-cancel',
+    '.median',
+  ];
+  for (const selStr of buttonContainers) {
+    for (const x of qsa(selStr)) {
+      if (! isUp(x)) continue;
+      for (const button of qsa(typeSel, x)) {
+        if (isUp(button)) button.click();
+      }
+      return;
+    }
+  }
+}
+
+// Temporary debug feature
+ael('.options', 'click', () => {
+  console.log(gs);
 });
 
 // Game initialization starts here
@@ -1390,6 +1534,7 @@ export const gs = {
   developmentDeck: [],
   largestArmy: {color: null, n: null},
   longestRoad: {color: null, n: null},
+  discard: {},
 };
 
 // If exactly one desert, place robber there
@@ -1402,7 +1547,12 @@ export const gs = {
 
 // Regulate which user controls which color
 // These will eventually be user ids or something
-gs.control = {orange: true};
+gs.control = {
+  orange: true,
+  blue: true,
+  white: true,
+  red: true,
+};
 
 // Add piece and hand information to game state
 for (const c of playerColors) {
@@ -1449,15 +1599,13 @@ for (const area of qsa('section.player-area')) {
   }
   qs('.username', s).innerHTML =
       qs('.username', area).innerHTML;
-  const s0 = s.cloneNode(true);
-  const s1 = s.cloneNode(true);
   const fn = area.classList.contains('left') ?
       'prepend' : 'append';
   const where = area.classList.contains('top') ?
       'top' : 'bottom';
-  qs(`.steal-menu .${where}`)[fn](s);
-  qs(`.acquire-cards .${where}`)[fn](s0);
-  qs(`.acquire-badge .${where}`)[fn](s1);
+  for (const qb of qsa('.quad-box')) {
+    qs(`.${where}`, qb)[fn](s.cloneNode(true));
+  }
 }
 
 // Attach quadrant click listeners to steal-menu
@@ -1510,15 +1658,17 @@ gs.bank = Object.fromEntries(resources.map(
   r => [r, resourceCount[r] ?? resourceCount.all]
 ));
 
-import {showExampleGame} from './example.js';
-showExampleGame();
+// import {showExampleGame} from './example.js';
+// showExampleGame();
 
-// nextSetupTurn();
+nextSetupTurn();
 
 // showDiscardMenu('orange');
 // qs('.acquire-cards').style.display = 'flex';
 
 
-console.log(board);
-console.log(gs);
-console.log(hexSites);
+
+
+// BUG LIST
+// victory points not being computed
+// no immediate robber prompt when rolling 7
