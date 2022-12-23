@@ -4,7 +4,7 @@ import {
 } from './utility.js';
 import {
   resources, cost, pieceCount,
-  resourceCount, developmentCount, vpCards,
+  resourceCount, developmentCount, vpCards, vpTarget,
   playerColors, exchangeRate, badgeMinimum,
   numberWords, config,
 } from './constants.js';
@@ -445,7 +445,8 @@ function recomputeVictoryPoints() {
   checkGameOver();
 }
 function checkGameOver() {
-  if (gs.victoryPoints[colorOnTurn()] < 10) return;
+  const vp = gs.victoryPoints[colorOnTurn()];
+  if (vp < vpTarget) return;
   gs.winner = colorOnTurn();
 }
 function showGameOver() {

@@ -36,6 +36,7 @@ export const badgeMinimum = {
   'largest-army': 3,
   'longest-road': 5,
 };
+export const vpTarget = 10;
 export const numberWords = [
   'zero', 'one', 'two', 'three', 'four',
   'five', 'six', 'seven', 'eight', 'nine',
