@@ -338,9 +338,17 @@ export function clickHex(hex) {
   }
   qsa('.chit')[hex].classList.add('selected');
   qs('.board svg').classList.remove('moving-robber');
-  qs('.median .cancel').style.display = 'none';
+  medianButton();
   qs('.confirm-robber').dataset.hex = hex;
   showConfirm('robber', centers[hex]);
+}
+
+function medianButton(type) {
+  for (const button of qsa('.median button')) {
+    button.style.display = 'none';
+  }
+  if (! type) return;
+  qs(`.median .${type}`).style.display = 'block';
 }
 
 // Add confirm-cancel dialogs
@@ -363,8 +371,7 @@ function showConfirm(type, svgCoords) {
   const ab = ! svgCoords ? 0 : coords[1] > 0 ? -1 : 1;
   cb.style = `--l: ${l}; --t: ${t}; --ab: ${ab};`;
   cb.style.display = 'flex';
-  qs('.median .cancel').style.display = 'none';
-  qs('.my-turn').style.display = 'none';
+  medianButton();
 }
 
 function colorOnTurn() {
@@ -396,8 +403,10 @@ function nextTurn() {
   gs.playedDevelopmentOnTurn = false;
   gs.roll = null;
   passDice();
+  checkGameOver();
+  if (gs.winner) return;
   if (gs.control[colorOnTurn()]) {
-    qs('.median .my-turn').style.display = 'block';
+    medianButton('my-turn');
   }
 }
 ael('.end-turn', 'click', () => {
@@ -406,11 +415,54 @@ ael('.end-turn', 'click', () => {
 });
 ael('.confirm-end-turn .cancel', 'click', () => {
   qs('.confirm-end-turn').style.display = 'none';
-  qs('.median .my-turn').style.display = 'block';
+  medianButton('my-turn');
 });
 ael('.confirm-end-turn .confirm', 'click', () => {
   qs('.confirm-end-turn').style.display = 'none';
   nextTurn();
+});
+
+function recomputeVictoryPoints() {
+  const vp = {};
+  const abbr = {};
+  for (const color of playerColors) {
+    vp[color] = 0;
+    const {development, unripe} = gs.hands[color];
+    for (const card of vpCards) {
+      vp[color] += development[card] + unripe[card];
+    }
+    abbr[color.substring(0, 1)] = color;
+  }
+  for (const x of gs.houses) {
+    if (! x) continue;
+    const a = x.toLowerCase();
+    vp[abbr[a]] += x === a ? 1 : 2;
+  }
+  for (const b of ['largestArmy', 'longestRoad']) {
+    if (gs[b].color) vp[gs[b].color] += 2;
+  }
+  gs.victoryPoints = vp;
+  checkGameOver();
+}
+function checkGameOver() {
+  if (gs.victoryPoints[colorOnTurn()] < 10) return;
+  gs.winner = colorOnTurn();
+}
+function showGameOver() {
+  medianButton('final');
+  const gom = qs('.game-over');
+  for (const color of playerColors) {
+    const vp = gs.victoryPoints[color];
+    const h = qs(`.quadrant.${color} .hand`, gom);
+    h.innerHTML = `Victory Points: ${vp}`;
+  }
+  gom.style.display = 'flex';
+}
+ael('.game-over .close', 'click', () => {
+  qs('.game-over').style.display = 'none';
+});
+ael('.median .final', 'click', () => {
+  qs('.game-over').style.display = 'flex';
 });
 
 function beginRobberMove(type, skipPrompt) {
@@ -429,7 +481,7 @@ ael('.confirm-robber .cancel', 'click', () => {
   cr.style.display = 'none';
   beginRobberMove(null, true);
   if (cr.dataset.type === 'knight') {
-    qs('.median .cancel').style.display = 'block';
+    medianButton('cancel');
   }
 });
 ael('.confirm-robber .confirm', 'click', () => {
@@ -437,13 +489,15 @@ ael('.confirm-robber .confirm', 'click', () => {
   qs('.selected').classList.remove('selected');
   cr.style.display = 'none';
   boardClickable(false);
-  qs('.my-turn').style.display = 'block';
+  medianButton('my-turn');
   const hex = + cr.dataset.hex
   moveRobber(hex);
   if (cr.dataset.type === 'knight') {
     makeCardPlayed(colorOnTurn(), 'knight');
     recomputeBadge('largest-army');
+    recomputeVictoryPoints();
   }
+  if (gs.winner) return;
   const stealChoices = [];
   for (const color of playerColors) {
     if (color === colorOnTurn()) continue;
@@ -469,8 +523,7 @@ ael('.confirm-robber .confirm', 'click', () => {
     clonedHand.classList.add('centered');
     qs('.hand', quadrant).replaceWith(clonedHand);
   }
-  qs('.median .my-turn').style.display = 'none';
-  qs('.median .steal').style.display = 'block';
+  medianButton('steal');
   const abm = qs('.acquire-badge');
   if (abm.style.display !== 'none') return;
   sm.style.display = 'flex';
@@ -485,7 +538,7 @@ ael('.confirm-build .cancel', 'click', () => {
     edgesClickable(color);
   } else sitesClickable(color, cb.dataset.type);
   if (gs.setup) return;
-  qs('.median .cancel').style.display = 'block';
+  medianButton('cancel');
 });
 ael('.confirm-build .confirm', 'click', () => {
   const color = colorOnTurn();
@@ -506,7 +559,7 @@ ael('.confirm-build .confirm', 'click', () => {
         cb.dataset.freePiecesPlaced += ' ';
       }
       cb.dataset.freePiecesPlaced += loc;
-      qs('.median .cancel').style.display = 'block';
+      medianButton('cancel');
       const nRoadsLeft = gs.piecesLeft[color].road;
       const nClickable = qsa('.clickable').length;
       if (! nRoadsLeft || ! nClickable) {
@@ -528,16 +581,20 @@ ael('.confirm-build .confirm', 'click', () => {
     }    
   }
   recomputeBadge('longest-road');
+  recomputeVictoryPoints();
   if (gs.setup) return;
   boardClickable(false);
-  qs('.my-turn').style.display = 'block';
+  if (! gs.winner) medianButton('my-turn');
+  else {
+    const abd = qs('.acquire-badge').style.display;
+    if (abd === 'none') showGameOver();
+  }
 });
 function cancelBuildEntirely() {
   edgesClickable(false);
   sitesClickable(false);
   boardClickable(false);
-  qs('.median .cancel').style.display = 'none';
-  qs('.my-turn').style.display = 'block';
+  medianButton('my-turn');
   const cbds = qs('.confirm-build').dataset;
   const fpp = cbds.freePiecesPlaced;
   if (! (+ cbds.freePiecesToGo)) return;
@@ -578,14 +635,14 @@ function showCardViewer(card, playing) {
     b.style.display = 'none';
   }
   if (playing) {
-    qs('.cancel', cv).style.display = 'block';
-    qs('.confirm', cv).style.display = 'block';
+    qs('.cancel', cv).style.display = 'inline';
+    qs('.confirm', cv).style.display = 'inline';
     qs('.confirm', cv).classList.toggle(
       'unavailable',
       card.classList.contains('vp') ||
           card.classList.contains('unripe')
     );
-  } else qs('.close', cv).style.display = 'block';
+  } else qs('.close', cv).style.display = 'inline';
   setTimeout(() => {
     hideTurnMenu();
     cv.style.display = 'flex';
@@ -595,7 +652,10 @@ function hideCardViewer() {
   const cv = qs('.card-viewer');
   cv.style.display = 'none';
   qs('.hand', cv).replaceChildren();
-  qs('.zoomed', cv).replaceChildren();  
+  qs('.zoomed', cv).replaceChildren();
+  if (! gs.winner) return;
+  const mfd = qs('.median .final').style.display;
+  if (mfd === 'none') showGameOver();
 }
 ael('.card-viewer .close', 'click', hideCardViewer);
 ael('.card-viewer .cancel', 'click', hideCardViewer);
@@ -708,10 +768,10 @@ function showTurnMenu() {
   );
   setTimeout(() => {
     tm.style.display = 'flex';
-    qs('.my-turn').style.display = 'block';
+    medianButton('my-turn');
   }, config.delay);
 }
-ael('.my-turn', 'click', showTurnMenu);
+ael('.median .my-turn', 'click', showTurnMenu);
 function hideTurnMenu() {
   qs('.turn-menu').style.display = 'none';
 }
@@ -856,8 +916,7 @@ function beginBuildFromTurnMenu(type) {
   boardClickable(true);
   qs('.confirm-build').dataset.type = type;
   hideTurnMenu();
-  qs('.my-turn').style.display = 'none';
-  qs('.median .cancel').style.display = 'block';
+  medianButton('cancel');
 }
 for (const type of ['road', 'settlement', 'city']) {
   const button = qs(`.buy-${type} button`);
@@ -896,7 +955,7 @@ ael('.buy-development button', 'click', () => {
 });
 ael('.confirm-buy-card .cancel', 'click', () => {
   qs('.confirm-buy-card').style.display = 'none';
-  qs('.my-turn').style.display = 'block';
+  medianButton('my-turn');
 });
 ael('.confirm-buy-card .confirm', 'click', () => {
   qs('.confirm-buy-card').style.display = 'none';
@@ -907,16 +966,17 @@ ael('.confirm-buy-card .confirm', 'click', () => {
   const card = qs(`.player-area.${color} ${sel}`);
   adjustCards('development');
   showCardViewer(card);
+  recomputeVictoryPoints();
+  if (gs.winner) return;
   setTimeout(() => {
-    qs('.my-turn').style.display = 'block';
+    medianButton('my-turn');
   }, config.delay);
 });
 
 function playDevelopmentCard(cardName) {
   if (cardName === 'knight') {
     hideCardViewer();
-    qs('.my-turn').style.display = 'none';
-    qs('.median .cancel').style.display = 'block';
+    medianButton('cancel');
     beginRobberMove('knight');
   }
   if (cardName === 'year-of-plenty') {
@@ -1003,12 +1063,11 @@ function playDevelopmentCard(cardName) {
     cb.dataset.type = 'road';
     cb.dataset.freePiecesToGo = nFreeRoads;
     cb.dataset.freePiecesPlaced = '';
-    qs('.my-turn').style.display = 'none';
-    qs('.median .cancel').style.display = 'block';
+    medianButton('cancel');
   }
 }
 
-export function recomputeBadge(type) {
+function recomputeBadge(type) {
   const prop = camelCase(type);
   const size = {};
   for (const c of playerColors) {
@@ -1065,7 +1124,6 @@ export function passDice() {
   }
 }
 function roll() {
-  qs('.my-turn').style.display = 'none';
   hideTurnMenu();
   gs.roll = [];
   for (const d of qsa('.dice .die')) {
@@ -1077,14 +1135,13 @@ function roll() {
   if (sum(gs.roll) === 7) {
     makeDiscardOverview();
     if (Object.keys(gs.discard).length) {
-      qs('.median .discard').style.display = 'block';
+      medianButton('discard');
     } else beginRobberMove('roll');
-  } else qs('.collect').style.display = 'block';
+  } else medianButton('collect');
 }
 ael('.roll', 'click', roll);
 function collect() {
-  qs('.collect').style.display = 'none';
-  qs('.my-turn').style.display = 'block';
+  medianButton('my-turn');
   const colorAbbr = Object.fromEntries(
     playerColors.map(x => [x.substring(0, 1), x])
   );
@@ -1140,7 +1197,7 @@ function collect() {
   acm.style.display = 'flex';
   adjustCards('resource');
 }
-ael('.collect', 'click', collect);
+ael('.median .collect', 'click', collect);
 ael('.median .discard', 'click', () => {
   qs('.discard-overview').style.display = 'flex';
 });
@@ -1210,7 +1267,7 @@ ael('.discard-overview .continue', 'click', () => {
     );
     return;
   }
-  qs('.median .discard').style.display = 'none';
+  medianButton();
   qs('.discard-overview').style.display = 'none';
   beginRobberMove('roll');
 });
@@ -1283,6 +1340,10 @@ ael('.acquire-cards .continue', 'click', () => {
 });
 ael('.acquire-badge .continue', 'click', () => {
   hideAcquire('badge');
+  if (gs.winner) {
+    showGameOver();
+    return;
+  }
   if (! gs.stealing) return;
   qs('.steal-menu').style.display = 'flex';
 });
@@ -1307,8 +1368,7 @@ ael('.steal-menu .confirm', 'click', () => {
     q.style.visibility = 'hidden';
     qs('.hand', q).replaceChildren();
   }
-  qs('.median .steal').style.display = 'none';
-  qs('.my-turn').style.display = 'block';
+  medianButton('my-turn');
   steal(from);
 });
 function steal(from) {
@@ -1445,9 +1505,10 @@ ael('.median .steal', 'click', () => {
     delete cbds.freePiecesPlaced;
     makeCardPlayed(colorOnTurn(), 'road-building');
     boardClickable(false);
-    qs('.median .cancel').style.display = 'none';
-    qs('.my-turn').style.display = 'block';
+    medianButton('my-turn');
     recomputeBadge('longest-road');
+    recomputeVictoryPoints();
+    if (gs.winner) showGameOver();
   });
 }
 
@@ -1528,6 +1589,8 @@ export const gs = {
   developmentDeck: [],
   largestArmy: {color: null, n: null},
   longestRoad: {color: null, n: null},
+  victoryPoints: {},
+  winner: null,
   discard: {},
 };
 
@@ -1548,7 +1611,7 @@ gs.control = {
   red: true,
 };
 
-// Add piece and hand information to game state
+// Add piece, hand, and vp information to game state
 for (const c of playerColors) {
   gs.piecesLeft[c] = {...pieceCount};
   gs.nCards[c] = {
@@ -1565,6 +1628,7 @@ for (const c of playerColors) {
     ),
     development: {...dObj}, unripe: {...dObj},
   };
+  gs.victoryPoints[c] = 0;
 }
 
 // Shuffle seating arrangement
@@ -1666,3 +1730,4 @@ nextSetupTurn();
 // BUG LIST
 // victory points not being computed
 // no immediate robber prompt when rolling 7
+// "warning" for disallowed development action
