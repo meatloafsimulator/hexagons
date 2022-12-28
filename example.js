@@ -112,7 +112,7 @@ export function showExampleGame() {
       makeCardPlayed(color, card);
     }
   }
-  gs.playedDevelopmentOnTurn = false;
+  gs.developedOnTurn = false;
   
   gs.developmentDeck = ['knight', 'chapel'];
   gs.developmentsLeft = gs.developmentDeck.length;
@@ -135,7 +135,7 @@ export function showExampleGame() {
   
   gs.setup = 0;
   gs.turn = gs.order.indexOf('orange');
-  // gs.playedDevelopmentOnTurn = true;
+  // gs.developedOnTurn = true;
   // qs('.player-area.orange .username').classList.add(
   //   'on-turn'
   // );

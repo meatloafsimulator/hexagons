@@ -41,7 +41,8 @@ function makePlayerArea(i, color) {
 }
 export function showPlayerName(color, username) {
   for (const x of qsa(`.${color} .username`)) {
-    x.innerHTML = username;    
+    x.innerHTML = username ?? color;
+    x.classList.toggle('default', username);
   }
 }
 
@@ -152,7 +153,7 @@ export function gainCard(color, loc, cardName) {
 export function makeCardPlayed(color, cardName) {
 
   // Development card has now been played on turn
-  gs.playedDevelopmentOnTurn = true;
+  gs.developedOnTurn = true;
 
   // Move card visually
   const h = `.player-area.${color} .hand.development`;
@@ -175,6 +176,7 @@ function gainStartingHand(color, site) {
   for (const hex of adjacentHexes) {
     if (! resources.includes(hex)) continue;
     gainCard(color, 'resource', hex);
+    gs.bank[hex]--;
   }
   adjustCards('resource');
 }
@@ -344,11 +346,12 @@ export function clickHex(hex) {
 }
 
 function medianButton(type) {
-  for (const button of qsa('.median button')) {
+  const lm = qs('.left .median');
+  for (const button of qsa('button', lm)) {
     button.style.display = 'none';
   }
   if (! type) return;
-  qs(`.median .${type}`).style.display = 'block';
+  qs(`.${type}`, lm).style.display = 'block';
 }
 
 // Add confirm-cancel dialogs
@@ -400,7 +403,7 @@ function nextSetupTurn() {
 function nextTurn() {
   ripenDevelopmentCards();
   gs.turn = (gs.turn + 1) % gs.order.length;
-  gs.playedDevelopmentOnTurn = false;
+  gs.developedOnTurn = false;
   gs.roll = null;
   passDice();
   checkGameOver();
@@ -455,7 +458,19 @@ function showGameOver() {
   for (const color of playerColors) {
     const vp = gs.victoryPoints[color];
     const h = qs(`.quadrant.${color} .hand`, gom);
-    h.innerHTML = `Victory Points: ${vp}`;
+    h.classList.add('stars');
+    for (let i = 0; i < vpTarget; i++) {
+      const img = document.createElement('img');
+      img.src = `img/ui/star-${+(i < vp)}.svg`;
+      h.append(img);
+    }
+    const wm = document.createElement('div');
+    wm.classList.add('win-marker');
+    if (gs.winner === color) {
+      wm.classList.add('winner');
+      wm.innerHTML = 'WINNER';
+    }
+    qs(`.quadrant.${color}`, gom).append(wm);
   }
   gom.style.display = 'flex';
 }
@@ -473,6 +488,7 @@ function beginRobberMove(type, skipPrompt) {
     );    
   }
   boardClickable(true);
+  medianButton();
   qs('.board svg').classList.add('moving-robber');
   if (type) qs('.confirm-robber').dataset.type = type;
 }
@@ -528,6 +544,10 @@ ael('.confirm-robber .confirm', 'click', () => {
   const abm = qs('.acquire-badge');
   if (abm.style.display !== 'none') return;
   sm.style.display = 'flex';
+});
+ael('.median .robber', 'click', () => {
+  medianButton();
+  beginRobberMove('roll');
 });
 
 ael('.confirm-build .cancel', 'click', () => {
@@ -604,9 +624,8 @@ function cancelBuildEntirely() {
   if (! fpp) return;
   for (const loc of fpp.split(' ')) removeRoad(loc);
   showExplanation(
-    `You have canceled playing the Road Building card.
-     Any roads that you had already placed in the
-     process of playing the card have been removed.`
+    `Canceling the card has removed one or more roads
+     that you had already placed while playing it.`
   );
 }
 ael('.median .cancel', 'click', cancelBuildEntirely);
@@ -665,15 +684,15 @@ ael('.card-viewer .confirm', 'click', () => {
   const card = qs('.selected', cv);
   if (card.classList.contains('vp')) {
     showExplanation(
-      `You don't play victory point cards directly.
-       They will be revealed for you automatically
-       whenever they allow you to win the game.`
+      `Victory point cards will be revealed
+       automatically when they allow you
+       to win the game.`
     );
     return;
   }
   if (card.classList.contains('unripe')) {
     showExplanation(
-      `You can't play a development card that<br>
+      `You can't play a development card that
        you purchased on the same turn.`
     );
     return;
@@ -756,16 +775,25 @@ function showTurnMenu() {
         gs.developmentsLeft;
     if (! left) button.classList.add('unavailable');
   }
-  const {development: nD, unripe: nU} =
-      gs.nCards[color];
-  const cantDevelop =
-      gs.playedDevelopmentOnTurn || ! (nD + nU);
+  const dHand = gs.hands[color].development;
+  const dPlayable = Object.entries(dHand).some(
+    x => x[1] && ! vpCards.includes(x[0])
+  );
+  const noDevelop = gs.developedOnTurn || ! dPlayable;
   for (const pdcb of qsa('.play-development', tm)) {
-    pdcb.classList.toggle('unavailable', cantDevelop);
+    pdcb.classList.toggle('unavailable', noDevelop);
   }
   qs('.with-bank', tm).classList.toggle(
     'unavailable',
     ! Object.keys(bankTradeChoices(color)).length
+  );
+  qs('.roll', tm).classList.toggle(
+    'continue', noDevelop && ! gs.roll
+  );
+  const nonChoice = '.unavailable, .close, .roll';
+  const choices = qsa(`button:not(${nonChoice})`, tm);
+  qs('.end-turn', tm).classList.toggle(
+    'continue', choices.length === 1 && gs.roll
   );
   setTimeout(() => {
     tm.style.display = 'flex';
@@ -867,15 +895,28 @@ ael('.with-bank .confirm', 'click', () => {
 
 for (const pdcb of qsa('.play-development')) {
   ael(pdcb, 'click', () => {
+    const color = colorOnTurn();
     if (pdcb.classList.contains('unavailable')) {
+      const {development, unripe} = gs.hands[color];
+      const hasVp = vpCards.some(
+        x => development[x] || unripe[x]
+      );
+      const hasUnripe = Object.entries(unripe).some(
+        x => x[1] && ! vpCards.includes(x[0])
+      );
       const d = 'development card';
-      const explanation = gs.playedDevelopmentOnTurn ?
+      let e = '';
+      if (hasVp || hasUnripe) e += ' except ';
+      if (hasVp) e += 'victory point cards';
+      if (hasVp && hasUnripe) e += ' and ';
+      if (hasUnripe) e += 'cards purchased this turn';
+      const explanation = gs.developedOnTurn ?
           `You can play only one ${d} per turn.` :
-          `You don't have any ${d}s to play.`;
+          `You don't have any ${d}s${e}.`;
       showExplanation(explanation);
       return;
     }
-    let sel = `.player-area.${colorOnTurn()}`;
+    let sel = `.player-area.${color}`;
     sel += ' .hand.development .card';
     const card = qs(`${sel}:not(.vp):not(.unripe)`);
     showCardViewer(card ?? qs(sel), true);  
@@ -977,8 +1018,8 @@ ael('.confirm-buy-card .confirm', 'click', () => {
 function playDevelopmentCard(cardName) {
   if (cardName === 'knight') {
     hideCardViewer();
-    medianButton('cancel');
     beginRobberMove('knight');
+    medianButton('cancel');
   }
   if (cardName === 'year-of-plenty') {
     const nCards = 2;
@@ -1135,9 +1176,8 @@ function roll() {
   }
   if (sum(gs.roll) === 7) {
     makeDiscardOverview();
-    if (Object.keys(gs.discard).length) {
-      medianButton('discard');
-    } else beginRobberMove('roll');
+    const ndc = Object.keys(gs.discard).length;
+    medianButton(ndc ? 'discard' : 'robber');
   } else medianButton('collect');
 }
 ael('.roll', 'click', roll);
@@ -1578,7 +1618,7 @@ export const gs = {
   turn: -1,
   roll: null,
   stealing: false,
-  playedDevelopmentOnTurn: false,
+  developedOnTurn: false,
   houses: sites.map(s => ''),
   roads: edges.map(e => ''),
   robber: -1,
@@ -1645,7 +1685,6 @@ if (playerColors.some(color => gs.control[color])) {
 // Make player areas
 for (const [i, color] of gs.order.entries()) {
   makePlayerArea(i, color);
-  showPlayerName(color, 'Anonymous');
 }
 
 // Make quadrants on quad-box modals
@@ -1704,6 +1743,11 @@ for (const t of qsa('template, .modal')) {
   }
 }
 
+// Add player names
+for (const color of playerColors) {
+  showPlayerName(color);
+}
+
 // Create and shuffle development card deck
 gs.developmentDeck = shuffle(
   Object.entries(developmentCount).flatMap(
@@ -1729,6 +1773,6 @@ nextSetupTurn();
 
 
 // BUG LIST
-// victory points not being computed
-// no immediate robber prompt when rolling 7
-// "warning" for disallowed development action
+
+// TASKS
+// refactor duplicated colors in svgs

@@ -91,6 +91,7 @@
   font-size: 25px;
   max-width: 600px;
   margin: 20px;
+  text-align: center;
 }
 
 .modal.explanation {
@@ -136,4 +137,27 @@
 }
 .steal-menu .quadrant.selected {
   outline: solid var(--br) var(--color-gold);
+}
+
+.game-over .hand.stars {
+  min-height: 48px;
+}
+.game-over .hand.stars img {
+  height: 36px;
+  margin: 0 -2px;
+}
+.game-over .quadrant:nth-child(2) .hand.stars {
+  flex-direction: row-reverse;
+}
+.game-over .win-marker {
+  background: var(--color-gold);
+  color: #000;
+  border: solid 2px #000;
+  height: 30px;
+  padding: 6px 12px;
+  margin: 12px;
+  visibility: hidden;
+}
+.game-over .win-marker.winner {
+  visibility: visible;
 }

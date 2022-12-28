@@ -101,6 +101,10 @@ p.vp {
   border-radius: 50%;
 }
 
+.username.default {
+  text-transform: capitalize;
+}
+
 .clickable {
   pointer-events: auto;
 }
